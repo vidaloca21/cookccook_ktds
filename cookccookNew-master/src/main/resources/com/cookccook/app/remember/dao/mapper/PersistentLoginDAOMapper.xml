@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cookccook.app.remember.dao.PersistentLoginDAO">
+    <insert id="createNewToken" parameterType="com.cookccook.app.remember.PersistentLogin">
+        INSERT INTO REMEMBER_ME (
+        SERIES
+        , MEMBER_ID
+        , TOKEN
+        , LAST_USED
+        )
+        VALUES (
+        #{series}
+        , #{memberId}
+        , #{token}
+        , #{lastUsed}
+        )
+    </insert>
+
+    <select id="getTokenForSeries" resultType="com.cookccook.app.remember.PersistentLogin">
+        SELECT * 
+        FROM REMEMBER_ME 
+        WHERE SERIES = #{seriesId}
+    </select>
+
+    <delete id="removeUserTokens" parameterType="java.lang.String">
+        DELETE
+        FROM REMEMBER_ME 
+        WHERE MEMBER_ID = #{memberId}
+    </delete>
+
+    <update id="updateToken" parameterType="com.cookccook.app.remember.PersistentLogin">
+        UPDATE
+        REMEMBER_ME 
+        SET TOKEN = #{token}
+        , LAST_USED = #{lastUsed} 
+        WHERE SERIES = #{series}
+    </update>
+</mapper>

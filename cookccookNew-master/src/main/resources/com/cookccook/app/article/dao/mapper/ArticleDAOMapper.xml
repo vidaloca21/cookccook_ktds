@@ -1,0 +1,633 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.cookccook.app.article.dao.ArticleDAO">
+
+      <resultMap type="com.cookccook.app.article.vo.ArticleVO" 
+	             id="articleVOMap"
+	             autoMapping="true">
+         <association property="memberVO" javaType="com.cookccook.app.member.vo.MemberVO" autoMapping="true">
+              <id column="MEMBER_ID" property="memberId" />
+              <result column="MEM_NICKNAME" property="memNickname" />
+              <result column="MEM_NAME" property="memName" />
+              <result column="ROLE" property="role" />
+         </association>
+         <association property="recipeVO" javaType="com.cookccook.app.article.vo.RecipeVO" autoMapping="true">
+              <id column="ARTICLE_ID" property="articleId" />
+              <result column="ATT_IMG_SMALL" property="attImgSmall" />
+              <result column="TITLE_IMG_PATH" property="titleImgPath" />
+              <result column="MANUAL_IMG01" property="manualImg01" />
+              <result column="MANUAL_IMG02" property="manualImg02" />
+              <result column="MANUAL_IMG03" property="manualImg03" />
+              <result column="MANUAL_IMG04" property="manualImg04" />
+              <result column="MANUAL_IMG05" property="manualImg05" />
+              <result column="MANUAL_IMG06" property="manualImg06" />
+              <result column="MANUAL_IMG07" property="manualImg07" />
+              <result column="MANUAL01" property="manual01" />
+              <result column="MANUAL02" property="manual02" />
+              <result column="MANUAL03" property="manual03" />
+              <result column="MANUAL04" property="manual04" />
+              <result column="MANUAL05" property="manual05" />
+              <result column="MANUAL06" property="manual06" />
+              <result column="MANUAL07" property="manual07" />
+         </association>
+      </resultMap>
+      
+      <resultMap type="com.cookccook.app.article.vo.ArticleVO" 
+	             id="articleImgMap"
+	             autoMapping="true">
+         <association property="recipeVO"
+					  javaType="com.cookccook.app.article.vo.RecipeVO"
+					  autoMapping="true">
+              <id column="ARTICLE_ID" property="articleId" />
+              <result column="INGREDIENT_DETAILS" property="ingredientDetails" />
+              <result column="RECIPE_TIP" property="recipeTip" />
+              <result column="MANUAL_IMG01" property="manualImg01" />
+              <result column="MANUAL_IMG02" property="manualImg02" />
+              <result column="MANUAL_IMG03" property="manualImg03" />
+              <result column="MANUAL_IMG04" property="manualImg04" />
+              <result column="MANUAL_IMG05" property="manualImg05" />
+              <result column="MANUAL_IMG06" property="manualImg06" />
+              <result column="MANUAL_IMG07" property="manualImg07" />
+              <result column="MANUAL01" property="manual01" />
+              <result column="MANUAL02" property="manual02" />
+              <result column="MANUAL03" property="manual03" />
+              <result column="MANUAL04" property="manual04" />
+              <result column="MANUAL05" property="manual05" />
+              <result column="MANUAL06" property="manual06" />
+              <result column="MANUAL07" property="manual07" />
+              <result column="TITLE_IMG_PATH" property="titleImgPath" />
+         </association>
+      </resultMap>
+
+   <select id="getAllRecipeArticle"
+           resultMap="articleVOMap">
+      SELECT A.ARTICLE_ID
+           , A.ARTICLE_TYPE
+           , A.MEMBER_ID
+           , A.CUISINE_ID
+           , A.UPPER_ARTICLE_ID
+           , A.TITLE
+           , A.CONTENT
+           , A.ARTICLE_INDEX
+           , A.ARTICLE_CONTENT
+           , A.VIEW_CNT
+           , A.LIKE_CNT
+           , A.EVENT_STATUS
+           , A.SAVE_STATUS
+           , A.POST_DATE
+           , A.EDIT_DATE
+           , A.HIDDEN_DATE
+           , R.ATT_IMG_SMALL
+           , R.TITLE_IMG_PATH
+           , M.MEM_NICKNAME
+           , R.RECIPE_NAME
+           , M.MEM_NAME
+        FROM ARTICLE A
+        JOIN RECIPE R
+          ON A.ARTICLE_ID = R.ARTICLE_ID
+        JOIN MEMBER M
+          ON A.MEMBER_ID = M.MEMBER_ID
+       WHERE 1=1
+         AND A.HIDDEN_DATE IS NULL
+         AND A.ARTICLE_TYPE = 1
+   </select>
+   
+   <select id="getRecipeArticleByTitle"
+           parameterType="string"
+           resultMap="articleImgMap">
+      SELECT A.ARTICLE_ID
+           , A.ARTICLE_TYPE
+           , A.MEMBER_ID
+           , A.CUISINE_ID
+           , A.UPPER_ARTICLE_ID
+           , A.TITLE
+           , A.CONTENT
+           , A.ARTICLE_INDEX
+           , A.ARTICLE_CONTENT
+           , A.VIEW_CNT
+           , A.LIKE_CNT
+           , A.EVENT_STATUS
+           , A.SAVE_STATUS
+           , A.POST_DATE
+           , A.EDIT_DATE
+           , A.HIDDEN_DATE
+           , R.ATT_IMG_SMALL
+           , R.ATT_IMG_BIG
+           , R.MANUAL_IMG01
+           , R.MANUAL_IMG02
+           , R.MANUAL_IMG03
+           , R.MANUAL_IMG04
+           , R.MANUAL_IMG05
+           , R.MANUAL_IMG06
+           , R.MANUAL_IMG07
+           , R.MANUAL01
+           , R.MANUAL02
+           , R.MANUAL03
+           , R.MANUAL04
+           , R.MANUAL05
+           , R.MANUAL06
+           , R.MANUAL07
+           , R.INGREDIENT_DETAILS
+           , R.RECIPE_TIP
+           , R.TITLE_IMG_PATH
+        FROM ARTICLE A
+        JOIN RECIPE R
+          ON A.ARTICLE_ID = R.ARTICLE_ID
+       WHERE 1=1
+         AND A.HIDDEN_DATE IS NULL
+         AND A.TITLE LIKE '%'||#{_parameter}||'%'
+   </select>
+   
+   <select id="getOneRecipeArticle"
+           parameterType="string"
+           resultMap="articleImgMap">
+      SELECT A.ARTICLE_ID
+           , A.ARTICLE_TYPE
+           , A.MEMBER_ID
+           , A.CUISINE_ID
+           , A.UPPER_ARTICLE_ID
+           , A.TITLE
+           , A.CONTENT
+           , A.ARTICLE_INDEX
+           , A.ARTICLE_CONTENT
+           , A.VIEW_CNT
+           , A.LIKE_CNT
+           , A.EVENT_STATUS
+           , A.SAVE_STATUS
+           , A.POST_DATE
+           , A.EDIT_DATE
+           , A.HIDDEN_DATE
+           , R.ATT_IMG_SMALL
+           , R.ATT_IMG_BIG
+           , R.MANUAL_IMG01
+           , R.MANUAL_IMG02
+           , R.MANUAL_IMG03
+           , R.MANUAL_IMG04
+           , R.MANUAL_IMG05
+           , R.MANUAL_IMG06
+           , R.MANUAL_IMG07
+           , R.MANUAL01
+           , R.MANUAL02
+           , R.MANUAL03
+           , R.MANUAL04
+           , R.MANUAL05
+           , R.MANUAL06
+           , R.MANUAL07
+           , R.INGREDIENT_DETAILS
+           , R.RECIPE_TIP
+           , R.TITLE_IMG_PATH
+        FROM ARTICLE A
+        JOIN RECIPE R
+          ON A.ARTICLE_ID = R.ARTICLE_ID
+       WHERE 1=1
+         AND A.HIDDEN_DATE IS NULL
+         AND A.ARTICLE_ID = #{articleId}
+   </select>
+   
+   <insert id="createNewRecipeArticle"
+         parameterType="com.cookccook.app.article.vo.ArticleVO">
+      INSERT INTO ARTICLE (
+             ARTICLE_ID
+           , ARTICLE_TYPE
+           , MEM_EMAIL
+           , CUISINE_ID
+           , UPPER_ARTICLE_ID
+           , TITLE
+           , CONTENT
+           , ARTICLE_INDEX
+           , ARTICLE_CONTENT
+           , VIEW_CNT
+           , LIKE_CNT
+           , EVENT_STATUS
+           , SAVE_STATUS
+           , POST_DATE
+           , EDIT_DATE
+           , HIDDEN_DATE
+           , MEMBER_ID)
+      VALUES (
+             ('ART' || LPAD(SEQ_ARTICLE_PK.NEXTVAL, 6, '0'))
+           , #{articleType}
+           , #{memEmail}
+           , #{cuisineId}
+           , #{upperArticleId}
+           , #{title}
+           , #{content}
+           , NULL
+           , NULL
+           , 0
+           , 0
+           , 'FALSE'
+           , 'FALSE'
+           , SYSDATE
+           , NULL
+           , NULL
+           , #{memberId})
+   </insert>
+   
+   <update id="updateOneRecipeArticle"
+         parameterType="com.cookccook.app.article.vo.ArticleVO">
+      UPDATE ARTICLE
+         SET TITLE = #{title}
+           , CONTENT = #{content}
+           , EDIT_DATE = SYSDATE
+       WHERE ARTICLE_ID = #{articleId}
+   </update>
+   
+   <update id="deleteOneRecipeArticle"
+         parameterType="string">
+      UPDATE ARTICLE
+         SET HIDDEN_DATE = SYSDATE
+       WHERE ARTICLE_ID = #{_parameter}
+   </update>
+   
+<!-- =========================================================== -->
+
+   <select id="getAllCommunityArticle"
+   		   parameterType="com.cookccook.app.article.vo.SearchArticleVO"
+           resultMap="articleVOMap">
+     SELECT *
+      FROM (SELECT ROWNUM AS RNUM
+	             , A.ARTICLE_ID
+	 		     , M.MEM_NICKNAME
+	 		     , A.TITLE
+	 		     , A.POST_DATE
+	 		     , A.EDIT_DATE 
+	 			 , A.HIDDEN_DATE
+	 		     , A.VIEW_CNT 
+	 		     , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID)
+	 		     , M.ROLE 
+	 		  FROM ARTICLE A
+	 		  JOIN MEMBER M
+	 		    ON A.MEMBER_ID = M.MEMBER_ID
+	 		 WHERE 1=1
+	 		   AND M.ROLE = 'ADMIN'
+	 		   AND A.HIDDEN_DATE IS NULL
+		       AND A.ARTICLE_TYPE = 0
+		       <if test='searchType != null and searchKeyword != ""'>
+	              <if test='searchType == "subject"'>
+	            AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+	              </if>
+	              <if test='searchType == "content"'>
+	            AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+	              </if>
+	           </if>
+	 	      ORDER BY A.POST_DATE DESC)
+	 UNION ALL 
+	 SELECT *
+	   FROM (SELECT ROWNUM AS RNUM
+	              , S.*
+	           FROM (SELECT *
+ 					  FROM (SELECT A.ARTICLE_ID
+ 							     , M.MEM_NICKNAME
+ 							     , A.TITLE
+ 							     , A.POST_DATE 
+ 							     , A.EDIT_DATE
+ 		      					 , A.HIDDEN_DATE
+ 							     , A.VIEW_CNT
+ 							     , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID)
+ 							     , M.ROLE
+ 							  FROM ARTICLE A
+ 							  JOIN MEMBER M 
+ 							    ON A.MEMBER_ID = M.MEMBER_ID 
+ 							 WHERE 1=1
+ 							   AND M.ROLE = 'INFLUENCER'
+ 							   AND A.HIDDEN_DATE IS NULL
+ 		                       AND A.ARTICLE_TYPE = 0
+		                       <if test='searchType != null and searchKeyword != ""'>
+	                              <if test='searchType == "subject"'>
+	                            AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+	                              </if>
+	                              <if test='searchType == "content"'>
+	                            AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+	                              </if>
+	                           </if>
+							 ORDER BY A.POST_DATE DESC)
+					 UNION ALL 
+					SELECT *
+					  FROM (SELECT A.ARTICLE_ID
+							     , M.MEM_NICKNAME
+							     , A.TITLE
+							     , A.POST_DATE 
+							     , A.EDIT_DATE
+		      					 , A.HIDDEN_DATE 
+							     , A.VIEW_CNT
+							     , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID)
+							     , M.ROLE
+							  FROM ARTICLE A
+							  JOIN MEMBER M 
+							    ON A.MEMBER_ID = M.MEMBER_ID 
+							 WHERE 1=1
+							   AND M.ROLE = 'USER'
+							   AND A.HIDDEN_DATE IS NULL
+		                       AND A.ARTICLE_TYPE = 0
+		                       <if test='searchType != null and searchKeyword != ""'>
+	                              <if test='searchType == "subject"'>
+	                            AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+	                              </if>
+	                              <if test='searchType == "content"'>
+	                            AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+	                              </if>
+	                           </if>
+							 ORDER BY A.POST_DATE DESC)) S
+	         WHERE ROWNUM <![CDATA[<=]]> (#{pageNo} + 1) * #{listSize})
+	 WHERE RNUM >= #{pageNo} * #{listSize} + 1
+   </select>
+   
+   <select id="getCommunityArticleByTitle"
+         parameterType="string"
+         resultType="com.cookccook.app.article.vo.ArticleVO">
+      SELECT A.ARTICLE_ID
+           , A.TITLE
+           , A.CONTENT
+           , A.VIEW_CNT
+           , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID) LIKE_CNT
+           , A.POST_DATE
+           , A.HIDDEN_DATE
+           , A.MEM_EMAIL
+        FROM ARTICLE A
+       WHERE 1=1
+         AND A.HIDDEN_DATE IS NULL
+         AND A.ARTICLE_TYPE = 0
+         AND A.TITLE LIKE '%'||#{_parameter}||'%'
+   </select>
+   
+   <select id="getOneCommunityArticle"
+         parameterType="string"
+         resultType="com.cookccook.app.article.vo.ArticleVO">
+     SELECT A.ARTICLE_ID
+          , A.TITLE
+          , A.CONTENT
+          , A.VIEW_CNT
+          , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID) LIKE_CNT
+          , A.POST_DATE
+          , A.EDIT_DATE
+          , A.HIDDEN_DATE
+          , A.MEM_EMAIL
+          , A.MEMBER_ID
+        FROM ARTICLE A
+       WHERE 1=1
+         AND A.HIDDEN_DATE IS NULL 
+         AND A.ARTICLE_ID = #{_parameter}
+   </select>
+   
+   <insert id="createNewCommunityArticle"
+           parameterType="com.cookccook.app.article.vo.ArticleVO">
+      INSERT INTO ARTICLE (
+             ARTICLE_ID
+           , ARTICLE_TYPE
+           , TITLE
+           , CONTENT
+           , VIEW_CNT
+           , LIKE_CNT
+           , POST_DATE
+           , EDIT_DATE
+           , HIDDEN_DATE
+           , SAVE_STATUS
+           , MEMBER_ID)
+      VALUES (
+             ('ART' || LPAD(SEQ_ARTICLE_PK.NEXTVAL, 6, '0'))
+           , 0
+           , #{title}
+           , #{content}
+           , 0
+           , 0
+           , SYSDATE
+           , NULL
+           , NULL
+           , 'FALSE'
+           , #{memberId})
+   </insert>
+   
+   <update id="updateOneCommunityArticle"
+         parameterType="com.cookccook.app.article.vo.ArticleVO">
+      UPDATE ARTICLE
+         SET TITLE = #{title}
+           , CONTENT = #{content}
+           , EDIT_DATE = SYSDATE
+       WHERE ARTICLE_ID = #{articleId}
+         AND HIDDEN_DATE IS NULL
+   </update>
+   
+   <update id="deleteOneCommunityArticle"
+         parameterType="string">
+      UPDATE ARTICLE
+         SET HIDDEN_DATE = SYSDATE
+       WHERE ARTICLE_ID = #{_parameter}
+   </update>
+   
+<!-- =========================================================== -->   
+   
+   <update id="increaseViewCount"
+         parameterType="string">
+      UPDATE ARTICLE
+         SET VIEW_CNT = VIEW_CNT + 1
+       WHERE ARTICLE_ID = #{_parameter}
+   </update>
+   
+   <insert id="increaseLikeCount"
+         parameterType="com.cookccook.app.article.vo.InterestVO">
+      INSERT INTO INTEREST
+          ( INTEREST_ID
+          , ARTICLE_ID
+          , MEMBER_ID)
+      VALUES
+          ( ('LKE' || LPAD(SEQ_INTEREST_PK.NEXTVAL, 6, '0'))
+          , #{articleId}
+          , #{memberId})
+   </insert>
+   
+   <delete id="decreaseLikeCount"
+         parameterType="string">
+      DELETE FROM INTEREST
+       WHERE INTEREST_ID = #{_parameter}
+   </delete>
+   
+   <select id="getAllInterestByArticleId"
+         parameterType="string">
+      SELECT INTEREST_ID
+          , ARTICLE_ID
+          , MEMBER_ID
+        FROM INTEREST
+       WHERE ARTICLE_ID = #{_parameter}
+   </select>
+   
+   <!-- =========================================================== -->
+   
+   <select id="searchAllRecipeArticle"
+           parameterType="com.cookccook.app.article.vo.SearchArticleVO"
+           resultMap="articleVOMap">
+   <include refid="common.pagination_header" />
+      SELECT A.ARTICLE_ID
+           , A.ARTICLE_TYPE
+           , A.CUISINE_ID
+           , A.UPPER_ARTICLE_ID
+           , A.TITLE
+           , A.CONTENT
+           , A.ARTICLE_INDEX
+           , A.ARTICLE_CONTENT
+           , A.VIEW_CNT
+           , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID) LIKE_CNT
+           , A.EVENT_STATUS
+           , A.SAVE_STATUS
+           , TO_CHAR(A.POST_DATE, 'YYYY-MM-DD') POST_DATE
+           , TO_CHAR(A.EDIT_DATE, 'YYYY-MM-DD') EDIT_DATE
+           , TO_CHAR(A.HIDDEN_DATE, 'YYYY-MM-DD') HIDDEN_DATE
+           , A.MEMBER_ID
+           , M.MEM_NICKNAME
+           , M.MEM_NAME
+           , R.ATT_IMG_SMALL
+           , R.TITLE_IMG_PATH
+        FROM ARTICLE A
+        JOIN RECIPE R
+          ON A.ARTICLE_ID = R.ARTICLE_ID
+        JOIN MEMBER M
+          ON A.MEMBER_ID = M.MEMBER_ID
+       WHERE 1=1
+         AND A.HIDDEN_DATE IS NULL
+         AND A.ARTICLE_TYPE = 1
+       <if test='searchType != null and searchKeyword != ""'>
+           <if test='searchType == "subject"'>
+         AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+           </if>
+           <if test='searchType == "content"'>
+         AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+           </if>
+       </if>
+         ORDER BY A.ARTICLE_ID DESC	
+         <include refid="common.pagination_footer" />
+   </select>
+   
+   <select id="getArticleAllCount"
+           parameterType="com.cookccook.app.article.vo.SearchArticleVO"
+           resultType="_int">
+        SELECT COUNT(A.ARTICLE_ID)
+          FROM ARTICLE A
+         INNER JOIN "MEMBER" M
+            ON M.MEMBER_ID = A.MEMBER_ID
+         WHERE 1=1
+           AND A.HIDDEN_DATE IS NULL
+           AND A.ARTICLE_TYPE = 1
+         <if test='searchType != null and searchKeyword != ""'>
+             <if test='searchType == "subject"'>
+         AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+             </if>
+             <if test='searchType == "content"'>
+         AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+             </if>
+         </if>
+   </select>
+   
+    <select id="searchAllCommunityArticle"
+           parameterType="com.cookccook.app.article.vo.SearchArticleVO"
+           resultMap="articleVOMap">
+       <include refid="common.pagination_header" />
+    SELECT *
+      FROM (SELECT ROWNUM AS RNUM
+	             , A.ARTICLE_ID
+	 		     , M.MEM_NICKNAME
+	 		     , A.TITLE
+	 		     , A.POST_DATE
+	 		     , A.EDIT_DATE 
+	 			 , A.HIDDEN_DATE
+	 		     , A.VIEW_CNT 
+	 		     , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID)
+	 		     , M.ROLE 
+	 		  FROM ARTICLE A
+	 		  JOIN MEMBER M
+	 		    ON A.MEMBER_ID = M.MEMBER_ID
+	 		 WHERE 1=1
+	 		   AND M.ROLE = 'ADMIN'
+	 		   AND A.HIDDEN_DATE IS NULL
+		       AND A.ARTICLE_TYPE = 0
+		       <if test='searchType != null and searchKeyword != ""'>
+	              <if test='searchType == "subject"'>
+	            AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+	              </if>
+	              <if test='searchType == "content"'>
+	            AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+	              </if>
+	           </if>
+	 	      ORDER BY A.POST_DATE DESC)
+	 UNION ALL 
+	 SELECT *
+	   FROM (SELECT ROWNUM AS RNUM
+	              , S.*
+	           FROM (SELECT *
+ 					  FROM (SELECT A.ARTICLE_ID
+ 							     , M.MEM_NICKNAME
+ 							     , A.TITLE
+ 							     , A.POST_DATE 
+ 							     , A.EDIT_DATE
+ 		      					 , A.HIDDEN_DATE
+ 							     , A.VIEW_CNT
+ 							     , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID)
+ 							     , M.ROLE
+ 							  FROM ARTICLE A
+ 							  JOIN MEMBER M 
+ 							    ON A.MEMBER_ID = M.MEMBER_ID 
+ 							 WHERE 1=1
+ 							   AND M.ROLE = 'INFLUENCER'
+ 							   AND A.HIDDEN_DATE IS NULL
+ 		                       AND A.ARTICLE_TYPE = 0
+		                       <if test='searchType != null and searchKeyword != ""'>
+	                              <if test='searchType == "subject"'>
+	                            AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+	                              </if>
+	                              <if test='searchType == "content"'>
+	                            AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+	                              </if>
+	                           </if>
+							 ORDER BY A.POST_DATE DESC)
+					 UNION ALL 
+					SELECT *
+					  FROM (SELECT A.ARTICLE_ID
+							     , M.MEM_NICKNAME
+							     , A.TITLE
+							     , A.POST_DATE 
+							     , A.EDIT_DATE
+		      					 , A.HIDDEN_DATE 
+							     , A.VIEW_CNT
+							     , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID)
+							     , M.ROLE
+							  FROM ARTICLE A
+							  JOIN MEMBER M 
+							    ON A.MEMBER_ID = M.MEMBER_ID 
+							 WHERE 1=1
+							   AND M.ROLE = 'USER'
+							   AND A.HIDDEN_DATE IS NULL
+		                       AND A.ARTICLE_TYPE = 0
+		                       <if test='searchType != null and searchKeyword != ""'>
+	                              <if test='searchType == "subject"'>
+	                            AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+	                              </if>
+	                              <if test='searchType == "content"'>
+	                            AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+	                              </if>
+	                           </if>
+							 ORDER BY A.POST_DATE DESC)) S
+	         WHERE ROWNUM <![CDATA[<=]]> (#{pageNo} + 1) * #{listSize})
+	 WHERE RNUM >= #{pageNo} * #{listSize} + 1
+   </select>
+   
+   <select id="getCommuArticleAllCount"
+           parameterType="com.cookccook.app.article.vo.SearchArticleVO"
+           resultType="_int">
+        SELECT COUNT(A.ARTICLE_ID)
+          FROM ARTICLE A
+         INNER JOIN "MEMBER" M
+            ON M.MEMBER_ID = A.MEMBER_ID
+         WHERE 1=1
+           AND A.HIDDEN_DATE IS NULL
+           AND A.ARTICLE_TYPE = 0
+         <if test='searchType != null and searchKeyword != ""'>
+             <if test='searchType == "subject"'>
+         AND A.TITLE LIKE '%' || #{searchKeyword} || '%'
+             </if>
+             <if test='searchType == "content"'>
+         AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+             </if>
+         </if>
+   </select>
+</mapper>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cookccook.app.shop.dao.CartDAO">
+
+	<resultMap type="com.cookccook.app.shop.vo.CartVO"
+			   id="cartVOMap"
+			   autoMapping="true">
+		<id column="CART_ID" property="cartId" />
+		<association property="choiceVO"
+					 javaType="com.cookccook.app.shop.vo.ChoiceVO"
+					 autoMapping="true">
+			<id column="CHOICE_ID" property="choiceId" />
+			<result column="CHO_NAME" property="choName" />
+			<result column="CHO_PRICE" property="choPrice" />
+		</association>
+		<association property="productVO"
+					 javaType="com.cookccook.app.shop.vo.ProductVO"
+					 autoMapping="true">
+			<id column="PRODUCT_ID" property="productId" />
+			<result column="PRD_NAME" property="prdName" />
+			<result column="PRD_TITLE_IMG_ORIGIN" property="prdTitleImgOrigin" />
+			<result column="PRD_PRICE" property="prdPrice" />
+		</association>
+	</resultMap>
+
+
+	<select id="getCartProductAllCount"
+			resultType="_int">
+		SELECT COUNT(1)
+		  FROM CART
+	</select>
+	
+	<select id="getAllCartProduct"
+			parameterType="string"
+			resultMap="cartVOMap">
+		SELECT C.CART_ID
+			 , C.MEMBER_ID
+			 , C.QUANTITY
+			 , CH.CHOICE_ID
+			 , CH.CHO_NAME
+			 , CH.CHO_PRICE
+			 , P.PRODUCT_ID
+			 , P.PRD_NAME
+			 , P.PRD_PRICE
+			 , P.SALE_STATE
+			 , P.PRD_TITLE_IMG_ORIGIN
+		  FROM CART C
+		  JOIN CHOICE CH
+			ON CH.CHOICE_ID = C.CHOICE_ID 
+		  JOIN PRODUCT P
+			ON P.PRODUCT_ID = CH.PRODUCT_ID 
+		 WHERE C.MEMBER_ID = #{_parameter}
+		   AND C.QUANTITY > 0
+	</select>
+	
+	<select id="getCartChoiceList"
+			parameterType="string"
+			resultType="string">
+		SELECT CHOICE_ID
+		  FROM CART
+		 WHERE MEMBER_ID = #{_parameter}
+		   AND QUANTITY > 0
+	</select>
+	
+	<select id="getOneCartByCartId"
+			parameterType="string"
+			resultMap="cartVOMap">
+		SELECT C.CART_ID
+			 , C.QUANTITY 
+			 , CH.CHOICE_ID 
+			 , CH.CHO_NAME
+			 , CH.CHO_PRICE 
+			 , P.PRODUCT_ID 
+			 , P.PRD_NAME 
+			 , P.PRD_PRICE 
+			 , P.PRD_TITLE_IMG_ORIGIN 
+			 , M.MEMBER_ID
+			 , ((CH.CHO_PRICE + P.PRD_PRICE ) * C.QUANTITY ) TOTAL_PRICE
+		  FROM CART C 
+		  JOIN CHOICE CH 
+			ON CH.CHOICE_ID = C.CHOICE_ID 
+		  JOIN PRODUCT P 
+		 	ON P.PRODUCT_ID = CH.PRODUCT_ID
+		  JOIN "MEMBER" M 
+		 	ON M.MEMBER_ID = C.MEMBER_ID 
+		 WHERE C.CART_ID = #{_parameter}
+	</select>
+	
+	<insert id="addNewProductToCart"
+			parameterType="com.cookccook.app.shop.vo.CartVO">
+		INSERT INTO CART (
+		       CART_ID
+		     , MEMBER_ID
+		     , CHOICE_ID
+		     , QUANTITY
+		     , CART_ADD_DATE)
+		VALUES (
+			 ( 'CRT' || LPAD(SEQ_CART_PK.NEXTVAL, 6, '0') )
+		     , #{memberId}
+		     , #{choiceId}
+		     , 1
+		     , SYSDATE)
+	</insert>
+	
+	<update id="deleteExistProductFromCart"
+			parameterType="com.cookccook.app.shop.vo.CartVO">
+		UPDATE CART
+		   SET QUANTITY = 0
+		 WHERE CART_ID = #{cartId}
+	</update>
+	
+	<update id="editProductCountFromCart"
+			parameterType="com.cookccook.app.shop.vo.CartVO">
+		UPDATE CART
+		   SET QUANTITY = #{quantity}
+		 WHERE CART_ID = #{cartId}
+	</update>
+	
+	<update id="deleteOneCart"
+		parameterType="string">
+		UPDATE CART
+		   SET QUANTITY = 0
+		 WHERE CART_ID = #{_parameter}
+	</update>
+	
+</mapper>

@@ -1,0 +1,753 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cookccook.app.chart.dao.ChartDAO">
+
+	<resultMap type="com.cookccook.app.chart.vo.ChartVO" 
+            id="chartVOMap"
+            autoMapping="true">
+      <collection property="memberVOList" ofType="com.cookccook.app.member.vo.MemberVO" autoMapping="true">
+        <id column="MEMBER_ID" property="memberId" />
+        <result column="MEM_NICKNAME" property="memNickname" />
+      </collection>
+      
+      <collection property="productVO"
+                 ofType="com.cookccook.app.shop.vo.ProductVO" autoMapping="true">
+        <id column="PRODUCT_ID" property="productId" />
+        <result column="PRD_NAME" property="prdName" />
+      </collection>
+      
+      <collection property="choiceVO"
+                  ofType="com.cookccook.app.shop.vo.ChoiceVO" autoMapping="true">
+        <id column="CHOICE_ID" property="choiceId" />
+        <result column="CHO_NAME" property="choName" />
+      </collection>
+      
+      <collection property="purchaseVO"
+                  ofType="com.cookccook.app.shop.vo.PurchaseVO" autoMapping="true">
+        <id column="PURCHASE_ID" property="purchaseId" />
+        <result column="PURCHASE_ID" property="purchaseId" />
+      </collection>
+      
+      <collection property="purchaseProductVO"
+                  ofType="com.cookccook.app.shop.vo.PurchaseProductVO" autoMapping="true">
+        <id column="PURCHASE_PRODUCT_ID" property="purchaseProductId" />
+        <result column="PUR_PRD_PRICE" property="purPrdPrice" />
+      </collection>
+   </resultMap>
+	<!--  
+	<select id="allMonthlyProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartVO"
+			resultMap="chartVOMap">
+			SELECT A.*
+				<choose>
+					<when test='period == "month" and seperator == "profit"'>, DENSE_RANK() OVER (PARTITION BY MONTH ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK</when>
+					<when test='period == "year" and seperator == "profit"'>, DENSE_RANK() OVER (PARTITION BY YEAR ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK</when>
+					<when test='period == "month" and seperator == "quantity"'>, DENSE_RANK() OVER (PARTITION BY MONTH ORDER BY TOTAL_QUANTITY DESC, TOTAL_PRICE DESC) AS RANK</when>
+					<when test='period == "year" and seperator == "quantity"'>, DENSE_RANK() OVER (PARTITION BY YEAR ORDER BY TOTAL_QUANTITY DESC, TOTAL_PRICE DESC) AS RANK</when>
+					<otherwise>, DENSE_RANK() OVER (ORDER BY TOTAL_PRICE DESC) AS RANK</otherwise>
+				</choose>
+				 , P.PRD_NAME
+				 , S.MEM_NAME
+			  FROM (
+			    SELECT
+			    	   PR.PRODUCT_ID
+			    	 <choose>
+			    	 	<when test='period == "month"'>, TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM') AS MONTH</when>
+			    	 	<when test='period == "year"'>, TO_CHAR(PUR.PURCHASE_DATE, 'YYYY') AS YEAR</when>
+			    	 </choose>
+			         , SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			         , SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			         , SEL.MEMBER_ID
+			      FROM PURCHASE_PRODUCT PPP
+			      JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+			      JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+			      JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+			      JOIN MEMBER SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+			      <choose>
+			      	<when test='period == "month"'>GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM'), PR.PRODUCT_ID, SEL.MEMBER_ID) A</when>
+			      	<when test='period == "year"'>GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY'), PR.PRODUCT_ID, SEL.MEMBER_ID) A</when>
+			      	<otherwise>GROUP BY PR.PRODUCT_ID, SEL.MEMBER_ID) A</otherwise>
+			      </choose>
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN MEMBER S ON A.MEMBER_ID = S.MEMBER_ID
+			  <choose>
+			      	<when test='period == "month"'>ORDER BY MONTH, RANK</when>
+			      	<when test='period == "year"'>ORDER BY YEAR, RANK</when>
+			      	<otherwise>ORDER BY RANK</otherwise>
+		      </choose>
+	</select>	-->
+	
+	<select id="allMonthlyProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartVO"
+			resultMap="chartVOMap">
+					SELECT A.*
+					    , DENSE_RANK() OVER (ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK
+					    , P.PRD_NAME
+					    , S.MEM_NAME
+					FROM (
+					    SELECT
+					        TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM') AS MONTH,
+					        PR.PRODUCT_ID,
+					        SUM(PPP.QUANTITY) AS TOTAL_QUANTITY,
+					        SUM(PPP.PUR_PRD_PRICE) TOTAL_PRICE,
+					        SEL.MEMBER_ID
+					    FROM PURCHASE_PRODUCT PPP
+					    JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+					    JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+					    JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+					    JOIN "MEMBER" SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+					    <if test="startDate != null and endDate != null">
+					    WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					      AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+					     </if>
+					    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM'), PR.PRODUCT_ID, SEL.MEMBER_ID
+					) A
+					JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+					JOIN "MEMBER" S ON A.MEMBER_ID = S.MEMBER_ID
+					ORDER BY RANK
+	</select>
+	
+	<select id="allYearProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT A.*
+			    , DENSE_RANK() OVER (ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK
+			    , P.PRD_NAME
+			    , S.MEM_NAME
+			FROM (
+			    SELECT
+			        TO_CHAR(PUR.PURCHASE_DATE, 'YYYY') AS YEAR,
+			        PR.PRODUCT_ID,
+			        SUM(PPP.QUANTITY) AS TOTAL_QUANTITY,
+			        SUM(PPP.PUR_PRD_PRICE) TOTAL_PRICE,
+			        SEL.MEMBER_ID
+			    FROM PURCHASE_PRODUCT PPP
+			    JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+			    JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+			    JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+			    JOIN "MEMBER" SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+			    <if test="startDate != null and endDate != null">
+			    WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+			      AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+			     </if>
+			    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY'), PR.PRODUCT_ID, SEL.MEMBER_ID
+			) A
+			JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			JOIN "MEMBER" S ON A.MEMBER_ID = S.MEMBER_ID
+			ORDER BY RANK
+	</select>
+	
+	<select id="allMonthlyProductSalesRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+		    SELECT A.*
+		        , DENSE_RANK() OVER (ORDER BY TOTAL_QUANTITY DESC, TOTAL_PRICE DESC) AS RANK
+		        , P.PRD_NAME
+		        , S.MEM_NAME
+		    FROM (
+		        SELECT
+		            TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM') AS MONTH
+		            , PR.PRODUCT_ID
+		            , SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+		            , SUM(PPP.PUR_PRD_PRICE) TOTAL_PRICE
+		            , SEL.MEMBER_ID
+		        FROM PURCHASE_PRODUCT PPP
+		        JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+		        JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+		        JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+		        JOIN MEMBER SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+		        <if test="startDate != null and endDate != null">
+		            WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+		            AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]>
+		        </if>
+		        GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM'), PR.PRODUCT_ID, SEL.MEMBER_ID
+		    ) A
+		    JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+		    JOIN MEMBER S ON A.MEMBER_ID = S.MEMBER_ID
+		    ORDER BY RANK
+	</select>
+	
+	<select id="allYearProductSalesRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT A.*
+				 , DENSE_RANK() OVER (ORDER BY TOTAL_QUANTITY DESC, TOTAL_PRICE DESC) AS RANK
+				 , P.PRD_NAME
+				 , S.MEM_NAME
+			 FROM (
+			     SELECT
+			           TO_CHAR(PUR.PURCHASE_DATE, 'YYYY') AS YEAR,
+			           PR.PRODUCT_ID,
+			           SUM(PPP.QUANTITY) AS TOTAL_QUANTITY,
+			           SUM(PPP.PUR_PRD_PRICE) TOTAL_PRICE,
+			           SEL.MEMBER_ID
+			      FROM PURCHASE_PRODUCT PPP
+			      JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+			      JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+			      JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+			      JOIN MEMBER SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+			       <if test="startDate != null and endDate != null">
+		            WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+		            AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]>
+		        </if>
+			     GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY'), PR.PRODUCT_ID, SEL.MEMBER_ID
+				   ) A
+			 JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			 JOIN MEMBER S ON A.MEMBER_ID = S.MEMBER_ID
+			ORDER BY RANK
+	</select>
+	
+	<select id="allProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK 
+				 , A.*
+				 , P.PRD_NAME
+				 , S.MEM_NAME
+			  FROM(SELECT
+			        	  PR.PRODUCT_ID
+			        	, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			        	, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			        	, SEL.MEMBER_ID
+			        	, TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM-DD') AS YEAR
+			    	 FROM PURCHASE_PRODUCT PPP
+			    	 JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+			    	 JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+			    	 JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+			    	 JOIN MEMBER SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+			    	 <if test="startDate != null and endDate != null">
+					    WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					      AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				     </if>
+			    	GROUP BY PR.PRODUCT_ID, SEL.MEMBER_ID, PUR.PURCHASE_DATE
+				   ) A   
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN MEMBER S ON A.MEMBER_ID = S.MEMBER_ID
+			 ORDER BY RANK
+	</select>
+	
+	<select id="allProductSalesRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (ORDER BY TOTAL_QUANTITY DESC, TOTAL_PRICE DESC) AS RANK 
+				 , A.*
+				 , P.PRD_NAME
+				 , S.MEM_NAME
+			  FROM(SELECT
+			        	  PR.PRODUCT_ID
+			        	, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			        	, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			        	, SEL.MEMBER_ID
+			        	, TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM-DD') AS YEAR
+			    	 FROM PURCHASE_PRODUCT PPP
+			    	 JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+			    	 JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+			    	 JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+			    	 JOIN MEMBER SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+			    	 <if test="startDate != null and endDate != null">
+					    WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					      AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				     </if>
+			    	GROUP BY PR.PRODUCT_ID, SEL.MEMBER_ID, PUR.PURCHASE_DATE
+				   ) A   
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN MEMBER S ON A.MEMBER_ID = S.MEMBER_ID
+			 ORDER BY RANK
+	</select>
+	
+	<select id="allMonthlySellerRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (ORDER BY SUM(TOTAL_PRICE) DESC, SUM(TOTAL_QUANTITY) DESC) AS RANK
+				 , MONTH
+				 , S.MEMBER_ID
+				 , S.MEM_NAME
+				 , SUM(TOTAL_QUANTITY) AS TOTAL_QUANTITY
+				 , SUM(TOTAL_PRICE) AS TOTAL_PRICE
+			  FROM (
+			    	SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM') AS MONTH
+			           	 , SEL.MEMBER_ID
+			           	 , SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			           	 , SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) AS TOTAL_PRICE
+			           	 , SEL.MEM_NAME
+			    	  FROM PURCHASE_PRODUCT PPP
+			    	  JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+				      JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+			 	      JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				      JOIN MEMBER SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+				      <if test="startDate != null and endDate != null">
+					    WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					      AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				     </if>
+			 	     GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM'), SEL.MEMBER_ID,MEM_NAME
+					) A
+			  JOIN MEMBER S 
+			    ON A.MEMBER_ID =  S.MEMBER_ID
+			 GROUP BY MONTH, S.MEMBER_ID, S.MEM_NAME
+			 ORDER BY RANK
+	</select>
+	
+	<select id="allYearSellerRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (ORDER BY SUM(TOTAL_PRICE) DESC, SUM(TOTAL_QUANTITY) DESC) AS RANK
+				 , YEAR
+			     , S.MEMBER_ID
+			     , S.MEM_NAME
+			     , SUM(TOTAL_QUANTITY) AS TOTAL_QUANTITY
+			     , SUM(TOTAL_PRICE) AS TOTAL_PRICE
+			  FROM ( SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY') AS YEAR,
+			           		SEL.MEMBER_ID,
+			           		SUM(PPP.QUANTITY) AS TOTAL_QUANTITY,
+			           		SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) AS TOTAL_PRICE,
+				            SEL.MEM_NAME
+			    	   FROM PURCHASE_PRODUCT PPP
+			    	   JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+			           JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+			    	   JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				       JOIN MEMBER SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+				       <if test="startDate != null and endDate != null">
+					    WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					      AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				     </if>
+				      GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY'), SEL.MEMBER_ID, MEM_NAME
+					) A
+			  JOIN MEMBER S 
+			    ON A.MEMBER_ID =  S.MEMBER_ID
+			 GROUP BY YEAR, S.MEMBER_ID, S.MEM_NAME
+			 ORDER BY RANK
+	</select>
+	
+	<select id="allSellerRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT S.MEMBER_ID
+				 , S.MEM_NAME
+				 , SUM(TOTAL_QUANTITY) AS TOTAL_QUANTITY
+			     , SUM(TOTAL_PRICE) AS TOTAL_PRICE
+			     , DENSE_RANK() OVER (ORDER BY SUM(TOTAL_PRICE) DESC, SUM(TOTAL_QUANTITY) DESC) AS RANK
+			  FROM ( SELECT SEL.MEMBER_ID,
+			           		SUM(PPP.QUANTITY) AS TOTAL_QUANTITY,
+				            SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) AS TOTAL_PRICE,
+			                SEL.MEM_NAME
+			    	   FROM PURCHASE_PRODUCT PPP
+				       JOIN CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+				       JOIN PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+				       JOIN PURCHASE PUR ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				       JOIN MEMBER SEL ON PR.MEMBER_ID = SEL.MEMBER_ID
+				       <if test="startDate != null and endDate != null">
+					    WHERE <![CDATA[PUR.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					      AND <![CDATA[PUR.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				     </if>
+				      GROUP BY  SEL.MEMBER_ID, MEM_NAME
+					) A
+			  JOIN MEMBER S 
+			    ON A.MEMBER_ID =  S.MEMBER_ID
+			 GROUP BY S.MEMBER_ID, S.MEM_NAME
+			 ORDER BY RANK
+	</select>
+	
+	<select id="Top3ProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT SUM(TOTAL_PRICE) AS TOTAL_PRICE
+			     , PRD_NAME 
+			  FROM (SELECT TOTAL_PRICE,
+			          CASE
+			          WHEN <![CDATA[ROWNUM <= 5 THEN PRD_NAME]]> 
+			          ELSE '기타'
+			           END AS PRD_NAME 
+			          FROM (SELECT PRD_NAME
+			                	 , SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			                  FROM PURCHASE_PRODUCT PPP
+			                  JOIN CHOICE C 
+			                    ON PPP.CHOICE_ID = C.CHOICE_ID
+			                  JOIN PRODUCT PR 
+			                    ON C.PRODUCT_ID = PR.PRODUCT_ID
+			                  JOIN MEMBER S 
+			                    ON PR.MEMBER_ID = S.MEMBER_ID
+			                 GROUP BY PRD_NAME
+			                 ORDER BY TOTAL_PRICE DESC))
+			 GROUP BY PRD_NAME
+	</select>
+	
+	<select id="DateByProduct"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT *
+			  FROM (SELECT *
+					  FROM (SELECT
+							      TO_CHAR(PURCHASE_DATE, 'YYYY-MM-DD') AS PURCHASE_DATE
+							    , SUM(PRD_PRICE + CHO_PRICE) AS TOTAL_PRICE
+							    , SUM(QUANTITY) AS TOTAL_QUANTITY
+							FROM
+							    PURCHASE_PRODUCT PPP
+							JOIN
+							    CHOICE C ON PPP.CHOICE_ID = C.CHOICE_ID
+							JOIN
+							    PRODUCT PR ON C.PRODUCT_ID = PR.PRODUCT_ID
+							JOIN 
+								MEMBER S ON PR.MEMBER_ID = S.MEMBER_ID
+							JOIN 
+								PURCHASE PC ON PPP.PURCHASE_ID = PC.PURCHASE_ID
+						    <if test="startDate != null and endDate != null">
+					    WHERE <![CDATA[PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					      AND <![CDATA[PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				     </if>	
+							GROUP BY PURCHASE_DATE) A
+					 ORDER BY PURCHASE_DATE ASC)
+	</select>
+	<!-- ========================================================================================================================= -->
+	<select id="SellerByAllMonthlyProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (PARTITION BY MONTH ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK
+			     , A.* 
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			 FROM (SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM') AS MONTH
+			 			, PR.PRODUCT_ID
+			 			, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			 			, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			 			, MEM.MEMBER_ID
+				     FROM PURCHASE_PRODUCT PPP
+				     JOIN CHOICE C 
+				       ON PPP.CHOICE_ID = C.CHOICE_ID
+				     JOIN PRODUCT PR 
+				       ON C.PRODUCT_ID = PR.PRODUCT_ID
+				     JOIN PURCHASE PUR 
+				       ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				     JOIN "MEMBER" MEM 
+				       ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   		WHERE MEM.MEMBER_ID = #{memberId}
+			   		<if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>
+				    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM'), PR.PRODUCT_ID, MEM.MEMBER_ID) A
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			 ORDER BY MONTH, RANK
+	</select>
+	
+	<select id="SellerByAllYearProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (PARTITION BY YEAR ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK 
+				 , A.* 
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			 FROM (SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY') AS YEAR
+			 			, PR.PRODUCT_ID
+			 			, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			 			, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			 			, MEM.MEMBER_ID
+				     FROM PURCHASE_PRODUCT PPP
+				     JOIN CHOICE C 
+				       ON PPP.CHOICE_ID = C.CHOICE_ID
+				     JOIN PRODUCT PR 
+				       ON C.PRODUCT_ID = PR.PRODUCT_ID
+				     JOIN PURCHASE PUR 
+				       ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				     JOIN "MEMBER" MEM 
+				       ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   		WHERE MEM.MEMBER_ID = #{memberId}
+			   		<if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>
+				    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY'), PR.PRODUCT_ID, MEM.MEMBER_ID) A
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			 ORDER BY YEAR, RANK
+	</select>
+	
+	<select id="SellerByAllMonthlyProductSalesRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (PARTITION BY MONTH ORDER BY TOTAL_QUANTITY DESC, TOTAL_PRICE DESC) AS RANK 
+				 , A.* 
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			 FROM (SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM') AS MONTH
+			 			, PR.PRODUCT_ID
+			 			, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			 			, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			 			, MEM.MEMBER_ID
+				     FROM PURCHASE_PRODUCT PPP
+				     JOIN CHOICE C 
+				       ON PPP.CHOICE_ID = C.CHOICE_ID
+				     JOIN PRODUCT PR 
+				       ON C.PRODUCT_ID = PR.PRODUCT_ID
+				     JOIN PURCHASE PUR 
+				       ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				     JOIN "MEMBER" MEM 
+				       ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   		WHERE MEM.MEMBER_ID = #{memberId}
+			   		<if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>
+				    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM'), PR.PRODUCT_ID, MEM.MEMBER_ID) A
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			 ORDER BY MONTH, RANK
+	</select>
+	
+	<select id="SellerByAllYearProductSalesRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (PARTITION BY YEAR ORDER BY TOTAL_QUANTITY DESC, TOTAL_PRICE DESC) AS RANK
+				 , A.* 
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			 FROM (SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY') AS YEAR
+			 			, PR.PRODUCT_ID
+			 			, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			 			, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			 			, MEM.MEMBER_ID
+				     FROM PURCHASE_PRODUCT PPP
+				     JOIN CHOICE C 
+				       ON PPP.CHOICE_ID = C.CHOICE_ID
+				     JOIN PRODUCT PR 
+				       ON C.PRODUCT_ID = PR.PRODUCT_ID
+				     JOIN PURCHASE PUR 
+				       ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				     JOIN "MEMBER" MEM 
+				       ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   		WHERE MEM.MEMBER_ID = #{memberId}
+			   		<if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>
+				    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY'), PR.PRODUCT_ID, MEM.MEMBER_ID) A
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			 ORDER BY YEAR, RANK
+	</select>
+	
+	<select id="SellerByAllProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (ORDER BY TOTAL_PRICE DESC) AS RANK 
+				 , A.*
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			  FROM(SELECT PR.PRODUCT_ID
+					    , SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+					    , SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+					    , MEM.MEMBER_ID
+			         FROM PURCHASE_PRODUCT PPP
+			         JOIN CHOICE C 
+			           ON PPP.CHOICE_ID = C.CHOICE_ID
+			         JOIN PRODUCT PR 
+			           ON C.PRODUCT_ID = PR.PRODUCT_ID
+			         JOIN PURCHASE PUR 
+			           ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+			         JOIN "MEMBER" MEM 
+			           ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   	    WHERE MEM.MEMBER_ID = #{memberId}
+			   	    <if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if> 
+			        GROUP BY PR.PRODUCT_ID, MEM.MEMBER_ID) A   
+			   JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			   JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			  ORDER BY RANK
+	</select>
+	
+	<select id="SellerByAllProductSalesRank"
+			parameterType="String"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (ORDER BY TOTAL_QUANTITY DESC) AS RANK 
+				 , A.*
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			  FROM(SELECT PR.PRODUCT_ID
+					    , SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+					    , SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+					    , MEM.MEMBER_ID
+			         FROM PURCHASE_PRODUCT PPP
+			         JOIN CHOICE C 
+			           ON PPP.CHOICE_ID = C.CHOICE_ID
+			         JOIN PRODUCT PR 
+			           ON C.PRODUCT_ID = PR.PRODUCT_ID
+			         JOIN PURCHASE PUR 
+			           ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+			         JOIN "MEMBER" MEM 
+			           ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   	    WHERE MEM.MEMBER_ID = #{memberId}
+			   	    <if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>  
+			        GROUP BY PR.PRODUCT_ID, MEM.MEMBER_ID) A   
+			   JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			   JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			   ORDER BY RANK
+	</select>
+	
+	<select id="SellerByMonthlyOneProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (PARTITION BY MONTH ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK 
+				 , A.*
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			 FROM (SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM') AS MONTH
+			 			, PR.PRODUCT_ID
+			 			, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			 			, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			 			, MEM.MEMBER_ID
+				     FROM PURCHASE_PRODUCT PPP
+				     JOIN CHOICE C 
+				       ON PPP.CHOICE_ID = C.CHOICE_ID
+				     JOIN PRODUCT PR 
+				       ON C.PRODUCT_ID = PR.PRODUCT_ID
+				     JOIN PURCHASE PUR 
+				       ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				     JOIN "MEMBER" MEM 
+				       ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   		WHERE MEM.MEMBER_ID = #{memberId}
+			   		<if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>
+				    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM'), PR.PRODUCT_ID, MEM.MEMBER_ID) A
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			 WHERE P.PRODUCT_ID = #{productId}
+			 ORDER BY MONTH, RANK
+	</select>
+	
+	<select id="SellerByYearOneProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (PARTITION BY YEAR ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK 
+				 , A.* 
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			 FROM (SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY') AS YEAR
+			 			, PR.PRODUCT_ID
+			 			, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			 			, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			 			, MEM.MEMBER_ID
+				     FROM PURCHASE_PRODUCT PPP
+				     JOIN CHOICE C 
+				       ON PPP.CHOICE_ID = C.CHOICE_ID
+				     JOIN PRODUCT PR 
+				       ON C.PRODUCT_ID = PR.PRODUCT_ID
+				     JOIN PURCHASE PUR 
+				       ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				     JOIN "MEMBER" MEM 
+				       ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   		WHERE MEM.MEMBER_ID = #{memberId}
+			   		<if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>
+				    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY'), PR.PRODUCT_ID, MEM.MEMBER_ID) A
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			 WHERE P.PRODUCT_ID = #{productId}
+			 ORDER BY YEAR, RANK
+	</select>
+	
+	<select id="SellerByOneProductRank"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (ORDER BY TOTAL_PRICE DESC, TOTAL_QUANTITY DESC) AS RANK 
+				 , A.* 
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			 FROM (SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM-DD')
+			 			, PR.PRODUCT_ID
+			 			, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			 			, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			 			, MEM.MEMBER_ID
+				     FROM PURCHASE_PRODUCT PPP
+				     JOIN CHOICE C 
+				       ON PPP.CHOICE_ID = C.CHOICE_ID
+				     JOIN PRODUCT PR 
+				       ON C.PRODUCT_ID = PR.PRODUCT_ID
+				     JOIN PURCHASE PUR 
+				       ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				     JOIN "MEMBER" MEM 
+				       ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   		WHERE MEM.MEMBER_ID = #{memberId}
+			   		<if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>
+				    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM-DD'), PR.PRODUCT_ID, MEM.MEMBER_ID) A
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			 WHERE P.PRODUCT_ID = #{productId}
+			 ORDER BY RANK
+	</select>
+	
+	<select id="SellerByOneProductSales"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT DENSE_RANK() OVER (ORDER BY TOTAL_QUANTITY DESC, TOTAL_PRICE DESC) AS RANK 
+				 , A.* 
+				 , P.PRD_NAME
+				 , M.MEM_NAME
+			 FROM (SELECT TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM-DD')
+			 			, PR.PRODUCT_ID
+			 			, SUM(PPP.QUANTITY) AS TOTAL_QUANTITY
+			 			, SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) TOTAL_PRICE
+			 			, MEM.MEMBER_ID
+				     FROM PURCHASE_PRODUCT PPP
+				     JOIN CHOICE C 
+				       ON PPP.CHOICE_ID = C.CHOICE_ID
+				     JOIN PRODUCT PR 
+				       ON C.PRODUCT_ID = PR.PRODUCT_ID
+				     JOIN PURCHASE PUR 
+				       ON PPP.PURCHASE_ID = PUR.PURCHASE_ID
+				     JOIN "MEMBER" MEM 
+				       ON PR.MEMBER_ID = MEM.MEMBER_ID
+			   		WHERE MEM.MEMBER_ID = #{memberId}
+			   		<if test="startDate != null and endDate != null">
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]>
+					  AND <![CDATA[TRUNC(PUR.PURCHASE_DATE) <= TO_DATE(#{endDate}, 'YYYY-MM-DD')]]> 
+				    </if>
+				    GROUP BY TO_CHAR(PUR.PURCHASE_DATE, 'YYYY-MM-DD'), PR.PRODUCT_ID, MEM.MEMBER_ID) A
+			  JOIN PRODUCT P ON A.PRODUCT_ID = P.PRODUCT_ID
+			  JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID
+			 WHERE P.PRODUCT_ID = #{productId}
+			 ORDER BY RANK
+	</select>
+	
+	<select id="TopRankOneProduct"
+			parameterType="com.cookccook.app.chart.vo.ChartSearchVO"
+			resultMap="chartVOMap">
+			SELECT SUM(TOTAL_PRICE) TOTAL_PRICE
+				 , SUM(TOTAL_QUANTITY) TOTAL_QUANTITY
+			     , PRD_NAME
+			  FROM (SELECT TOTAL_PRICE
+			             , CASE
+			     <![CDATA[ WHEN ROWNUM <= 3 THEN PRD_NAME ]]>
+			          	   ELSE '기타'
+			         	   END AS PRD_NAME
+			         	 , TOTAL_QUANTITY
+			          FROM (SELECT PRD_NAME
+			                	 , SUM(QUANTITY) AS TOTAL_QUANTITY
+			                	 , SUM(PPP.PUR_PRD_PRICE+C.CHO_PRICE) AS TOTAL_PRICE
+				              FROM PURCHASE_PRODUCT PPP
+				              JOIN CHOICE C 
+				                ON PPP.CHOICE_ID = C.CHOICE_ID
+				              JOIN PRODUCT PR 
+				                ON C.PRODUCT_ID = PR.PRODUCT_ID
+				              JOIN "MEMBER" MEM 
+				       			ON PR.MEMBER_ID = MEM.MEMBER_ID
+			             	 WHERE MEM.MEMBER_ID = #{memberId}
+			             	 GROUP BY PR.PRD_NAME
+			             	 ORDER BY TOTAL_PRICE DESC))
+			  GROUP BY PRD_NAME
+	</select>
+	
+</mapper>

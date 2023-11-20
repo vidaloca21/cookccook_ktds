@@ -1,0 +1,102 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.cookccook.app.article.dao.RecipeDAO">
+
+	<resultMap type="com.cookccook.app.article.vo.RecipeVO"
+			   id="recipeVOMap"
+			   autoMapping="true">
+		<id column="ARTICLE_ID" property="articleId" />
+		<association property="articleVO"
+					 javaType="com.cookccook.app.article.vo.ArticleVO"
+					 autoMapping="true">
+			<id column="ARTICLE_ID" property="articleId" />
+		</association>
+	</resultMap>
+	
+	<select id="getAllIngredientDetails"
+			resultType="com.cookccook.app.article.vo.RecipeVO">
+		SELECT ARTICLE_ID
+			 , INGREDIENT_DETAILS 
+		  FROM RECIPE
+	</select>
+
+	<select id="getIngredientDetailByArticleId"
+			parameterType="string"
+			resultType="string">
+		SELECT INGREDIENT_DETAILS 
+		  FROM RECIPE
+		 WHERE ARTICLE_ID = #{_parameter}
+	</select>
+
+	<insert id="createNewRecipe"
+			parameterType="com.cookccook.app.article.vo.RecipeVO">
+		INSERT INTO RECIPE
+			 ( ARTICLE_ID
+			 , RECIPE_NAME
+			 , ATT_IMG_SMALL
+			 , RECIPE_TIP
+			 , MANUAL01
+			 , MANUAL02
+			 , MANUAL03
+			 , MANUAL04
+			 , MANUAL05
+			 , MANUAL06
+			 , MANUAL07
+			 , MANUAL_IMG01
+			 , MANUAL_IMG02
+			 , MANUAL_IMG03
+			 , MANUAL_IMG04
+			 , MANUAL_IMG05
+			 , MANUAL_IMG06
+			 , MANUAL_IMG07
+			 , ATT_IMG_BIG
+			 , COOKING_METHOD
+			 , HASH_TAG
+			 , RECIPE_KIND
+			 , INGREDIENT_DETAILS)		
+		VALUES
+			 ( #{articleId}
+			 , #{recipeName}
+			 , #{attImgSmall}
+			 , #{recipeTip}
+			 , #{manual01}
+			 , #{manual02}
+			 , #{manual03}
+			 , #{manual04}
+			 , #{manual05}
+			 , #{manual06}
+			 , #{manual07}
+			 , #{manualImg01}
+			 , #{manualImg02}
+			 , #{manualImg03}
+			 , #{manualImg04}
+			 , #{manualImg05}
+			 , #{manualImg06}
+			 , #{manualImg07}
+			 , #{attImgBig}
+			 , #{cookingMethod}
+			 , #{hashTag}
+			 , #{recipeKind}
+			 , #{ingredientDetails})
+	</insert>
+	
+	<select id="getOneRecipe"
+			parameterType="string"
+			resultType="com.cookccook.app.article.vo.RecipeVO">
+		SELECT ARTICLE_ID
+			 , RECIPE_NAME
+			 , ATT_IMG_SMALL
+			 , TITLE_IMG_PATH
+		  FROM RECIPE
+		 WHERE ARTICLE_ID = #{_parameter}
+	</select>
+	
+	<select id="getAllRecipeImg"
+			resultType="string">
+		SELECT ATT_IMG_SMALL
+		  FROM RECIPE		
+	</select>
+			
+</mapper>

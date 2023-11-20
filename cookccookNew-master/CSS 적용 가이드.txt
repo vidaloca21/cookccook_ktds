@@ -1,0 +1,41 @@
+<< css 작업 가이드 >> 
+** 만약 이번 병합 전 시점에 이미 가이드를 따라 완료된 jsp 작업이 존재한다면
+해당 파일의 <div class="container"> 태그를 제거해주세요. ** 번거롭게 해드려 죄송 (- -)(_ _)(- -)
+
+
+1. <body> 바로 아래에 아래의 태그를 복사 붙여넣기 
+<jsp:include page="../layout/${header_type}.jsp"></jsp:include>
+
+2. </body> 바로 위에 아래의 태그를 복사 붙여넣기
+<jsp:include page="../layout/footer.jsp"></jsp:include>
+
+3. <title> </title> 바로 아랫 줄에 아래의 코드를 붙여넣기한다.
+<link rel="stylesheet" type="text/css" href="/css/layout/lib/layout.css">
+
+4. css 를 적용하려는 jsp 파일에서 아래 태그를 모두 지운다. 
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"> 
+</head>
+<body>
+</body>
+</html>
+
+!!!!! ========== 참고 ========== !!!! 
+1. 버튼 컴포넌트 제작되어있음.
+class명: btn_fill,  btn_empty, btn_navigate
+사이즈 조정 희망하는 경우, 본인jsp 파일에서 width와 height만 스타일 지정해 사용
+
+2. 관리자, 판매자 페이지용 header 는 아직 미제작. 화면/url 확인해서 제작예정
+
+
+!!!!! ========== 만약 ========== !!!! 
+위 내용대로 입력했는데 뭔가가 깨지거나 잘 맞지 않는 경우, 
+
+1) 
+아래 경로의 layout.css 파일에서 지정한 태그와 동일한 class/id 명을 사용하는지 확인하여
+본인 jsp 파일에서 스타일을 다시 넣거나 이름을 변경한다. 
+경로: src/main/resources/static/css/layout/lib/layout.css
+
+2) jsp 파일 내의 div 가 짝 맞게 잘 여닫혔는지 VS CODE 에서 확인한다. 

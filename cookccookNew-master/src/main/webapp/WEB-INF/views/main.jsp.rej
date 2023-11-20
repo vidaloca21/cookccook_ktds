@@ -1,0 +1,9 @@
+diff a/src/main/webapp/WEB-INF/views/main.jsp b/src/main/webapp/WEB-INF/views/main.jsp	(rejected hunks)
+@@ -12,6 +12,7 @@
+ <head>
+     <title>Main Page</title>
+ </head>
++
+ <body>
+ <h1>COOKCCOOK</h1>
+ <h2>메인 페이지입니다.</h2>

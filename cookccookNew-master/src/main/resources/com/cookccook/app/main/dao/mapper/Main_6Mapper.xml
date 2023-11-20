@@ -1,0 +1,119 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cookccook.app.main.dao.MainDAO">
+
+<resultMap type="com.cookccook.app.recommend.vo.AnniversaryVO"
+			id="AnniversaryVOMap" autoMapping="true">
+	<id column="ANNIVERSARY_ID" property="anniversaryId"/>
+	<collection property="artAnnVOList"	
+				javaType="collection"
+				ofType="com.cookccook.app.recommend.vo.ArtAnnVO"	
+				autoMapping="true">
+			<id column="ART_ANN_ID" property="artAnnId"/>
+		<association property="articleVO"
+					 javaType="com.cookccook.app.article.vo.ArticleVO"
+					 autoMapping="true">
+			<id column="ARTICLE_ID" property="articleId"/>
+		</association>
+	</collection>	
+</resultMap>
+
+	<resultMap type="com.cookccook.app.article.vo.RecipeVO"
+			   id="recipeVOMap"
+			   autoMapping="true">
+		<id column="ARTICLE_ID" property="articleId" />
+		<association property="articleVO"
+					 javaType="com.cookccook.app.article.vo.ArticleVO"
+					 autoMapping="true">
+			<id column="ARTICLE_ID" property="articleId" />
+		</association>
+	</resultMap>
+	
+	<resultMap type="com.cookccook.app.article.vo.ArticleVO"
+				id="ArticleVOMap"
+				autoMapping="true">
+			<id column="ARTICLE_ID" property="articleId" />
+			<collection property="artTagList"
+						javaType="collection"
+						ofType="com.cookccook.app.recommend.vo.ArtTagVO"	
+						autoMapping="true">
+				<association property="TagVO"
+							javaType="com.cookccook.app.recommend.vo.TagVO"	
+							autoMapping="true">
+							<id column="TAG_ID" property="tagId" />
+				</association>
+			</collection>
+	</resultMap>
+
+<!-- 현재 시점 기준 7일 이내의 기념일에 해당하는 recipe 목록 -->
+<select id="getArtIdByAnniv"
+		resultType="string">
+	SELECT A2.ARTICLE_ID 
+	  FROM ANNIVERSARY A 
+	  LEFT JOIN ART_ANN AN 
+	    ON AN.ANNIVERSARY_ID = A.ANNIVERSARY_ID 
+	  LEFT JOIN ARTICLE A2
+	    ON A2.ARTICLE_ID = AN.ARTICLE_ID 
+	 WHERE A.ANNIVERSARY_NAME LIKE ( SELECT ANNIVERSARY_NAME
+			                        FROM (SELECT ANNIVERSARY_NAME
+			                              FROM ANNIVERSARY 
+			                              WHERE TO_DATE(ANNIVERSARY_DATE, 'MM-DD') - SYSDATE <![CDATA[<=]]> 7
+			                                AND TO_DATE(ANNIVERSARY_DATE,'MM-DD') - SYSDATE <![CDATA[>]]> 0
+			                              ORDER BY ANNIVERSARY_DATE ASC)
+			                        WHERE ROWNUM = 1)
+</select>
+
+<select id="getArtInfoByArtId"
+		parameterType="string"
+		resultMap = "recipeVOMap">
+SELECT a.ARTICLE_ID
+	 , a.TITLE
+	 , r.ATT_IMG_SMALL
+  FROM ARTICLE a 
+  JOIN RECIPE r 
+    ON a.ARTICLE_ID = r.ARTICLE_ID 
+ WHERE a.ARTICLE_ID = #{_parameter}
+</select>
+
+<select id="getRelatedArtId"
+		parameterType="string"
+		resultType="string">
+SELECT ARTICLE_ID
+FROM 
+	(SELECT A.ARTICLE_ID
+	  FROM ARTICLE a 
+	  JOIN ART_TAG at2 
+	    ON AT2.ARTICLE_ID = A.ARTICLE_ID 
+	  JOIN TAG t 
+	    ON T.TAG_ID = AT2.TAG_ID 
+	 WHERE T.TAG_ID = (SELECT T.TAG_ID 
+						  FROM ARTICLE a 
+						  JOIN ART_TAG at2 
+						    ON AT2.ARTICLE_ID = A.ARTICLE_ID 
+						  JOIN TAG t 
+						    ON T.TAG_ID = AT2.TAG_ID 
+						 WHERE A.ARTICLE_ID = #{_parameter} 
+						 )
+	 ORDER BY DBMS_RANDOM.value)
+ WHERE ROWNUM <![CDATA[<=]]> 5
+ </select>
+ 
+ <select id = "getRecomByTemp"
+ 		 parameterType="string"
+ 		 resultMap="ArticleVOMap">
+ SELECT ARTICLE_ID
+  FROM ARTICLE a 
+  JOIN ART_TAG at 
+    ON A.ARTICLE_ID = AT.ARTICLE_ID
+  JOIN TAG t 
+    ON T.TAG_ID = AT.TAG_ID
+ WHERE T.TEMP_RANGE LIKE (SELECT CASE 
+								   WHEN #{_parameter} <![CDATA[>=]]> 15 THEN 'HOT' 
+								   WHEN #{_parameter} <![CDATA[<]]> 15 THEN 'COLD'
+						   		  END AS CURRENT_TEMP
+						   FROM DUAL 
+						   )
+ 		 
+ </select>
+</mapper>

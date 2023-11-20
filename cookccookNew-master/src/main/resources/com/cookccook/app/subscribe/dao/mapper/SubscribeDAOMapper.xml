@@ -1,0 +1,264 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.cookccook.app.subscribe.dao.SubscribeDAO">
+	<resultMap type="com.cookccook.app.subscribe.vo.SubPayVO" id="SubPayVOMap" autoMapping="true">
+		<id column="SUB_PAY_ID" property="subPayId"/>
+		<association property="subscribeVO" javaType="com.cookccook.app.subscribe.vo.SubscribeVO" autoMapping="true">
+			<id column="SUBSCRIBE_ID" property="subscribeId"/>
+		</association>
+		<association property="deliverPlaceVO" javaType="com.cookccook.app.shop.vo.DeliverPlaceVO" autoMapping="true">
+			<id column="DELIVER_PLACE_ID" property="deliverPlaceId"/>
+		</association>
+	</resultMap>
+	
+	<resultMap type="com.cookccook.app.subscribe.vo.SubIngVO" id="SubIngVOMap" autoMapping="true">
+		<id column="SUB_ING_ID" property="subIngId"/>
+		<association property="subscribeVO" javaType="com.cookccook.app.subscribe.vo.SubscribeVO" autoMapping="true">
+			<id column="SUBSCRIBE_ID" property="subscribeId"/>
+		</association>
+		<association property="ingredientVO" javaType="com.cookccook.app.recommend.vo.IngredientVO" autoMapping="true">
+			<id column="INGREDIENT_ID" property="ingredientId"/>
+		</association>
+	</resultMap>
+	
+	<select id="getCurrentSubscribe" 
+			resultType="com.cookccook.app.subscribe.vo.SubscribeVO">
+		SELECT SUBSCRIBE_ID
+			 , SUB_CHOICE
+			 , SUB_PRICE
+			 , SUB_START_DATE
+			 , SUB_END_DATE
+		  FROM SUBSCRIBE
+		 WHERE SUB_START_DATE <![CDATA[<=]]> SYSDATE
+		   AND SUB_END_DATE <![CDATA[>=]]> SYSDATE 
+	</select>
+	
+	<select id="getDeliverPlaceByMemberId"
+			parameterType="string"
+			resultType="com.cookccook.app.shop.vo.DeliverPlaceVO">
+		SELECT DELIVER_PLACE_ID
+			 , MEMBER_ID
+			 , DEL_ALIAS
+			 , DEL_ADDRESS
+			 , DEL_DETAIL_ADDRESS
+			 , ZIP_CODE
+			 , RECIPIENT
+			 , RECIPIENT_PHONE_NUMBER
+		  FROM DELIVER_PLACE
+		 WHERE MEMBER_ID = #{_parameter}
+	</select>
+	
+	<select id="getOneSubscribeChoice"
+			parameterType="string"
+			resultType="com.cookccook.app.subscribe.vo.SubscribeVO">
+		SELECT SUBSCRIBE_ID
+			 , SUB_CHOICE
+			 , SUB_PRICE
+			 , SUB_START_DATE
+			 , SUB_END_DATE
+		  FROM SUBSCRIBE
+		 WHERE SUBSCRIBE_ID = #{_parameter}
+	</select>
+	
+	<insert id="createNewSubscribePay"
+			parameterType="com.cookccook.app.subscribe.vo.SubPayVO">
+		INSERT INTO SUB_PAY (
+			   SUB_PAY_ID
+			 , MEMBER_ID
+			 , SUBSCRIBE_ID
+			 , PAY_METHOD
+			 , PAY_DATE
+			 , CANCEL_DATE
+			 , DELIVER_PLACE_ID
+			 , IMP_UID)
+		VALUES 
+			 (('AK' || LPAD(SEQ_SUB_PAY_PK.NEXTVAL, 6, '0'))
+			 , #{memberId}
+			 , #{subscribeId}
+			 , #{payMethod}
+			 , SYSDATE
+			 , NULL
+			 , #{deliverPlaceId}
+			 , #{impUid}
+		)
+	</insert>
+	
+	<select id="getCurrentSubpayByMemberId" parameterType="string" resultMap="SubPayVOMap">
+		SELECT SP.SUB_PAY_ID
+		     , SP.MEMBER_ID
+		     , SP.SUBSCRIBE_ID
+		     , SP.PAY_METHOD
+		     , SP.PAY_DATE
+		     , SP.DELIVER_PLACE_ID
+		     , SP.IMP_UID 
+		     , DP.DEL_ALIAS
+		     , DP.DEL_ADDRESS
+		     , DP.DEL_DETAIL_ADDRESS
+		     , DP.ZIP_CODE
+		     , DP.RECIPIENT
+		     , DP.RECIPIENT_PHONE_NUMBER
+		  FROM SUB_PAY SP
+		 INNER JOIN DELIVER_PLACE DP 
+		    ON DP.DELIVER_PLACE_ID = SP.DELIVER_PLACE_ID
+		 WHERE SP.MEMBER_ID = #{_parameter}
+		   AND SP.CANCEL_DATE IS NULL
+	</select>
+	
+	<select id="getIngredientsBySubPayId" parameterType="string" resultType="com.cookccook.app.recommend.vo.IngredientVO">
+		SELECT I.INGREDIENT_ID
+		     , I.INGREDIENT_NAME
+		     , I.EXPIRE_DATE
+		     , I.ING_CLASS
+		  FROM SUB_PAY SP
+		 INNER JOIN SUBSCRIBE S
+		    ON SP.SUBSCRIBE_ID = S.SUBSCRIBE_ID 
+		 INNER JOIN SUB_ING SI
+		    ON SI.SUBSCRIBE_ID = S.SUBSCRIBE_ID 
+		 INNER JOIN INGREDIENT I 
+		    ON I.INGREDIENT_ID = SI.INGREDIENT_ID
+		 WHERE SP.SUB_PAY_ID = #{_parameter}
+	</select>
+	
+	<select id="getSubpayHistoryByMember" parameterType="string" resultMap="SubPayVOMap">
+		SELECT SP.SUB_PAY_ID
+		     , SP.MEMBER_ID
+		     , SP.SUBSCRIBE_ID
+		     , SP.PAY_METHOD
+		     , SP.PAY_DATE
+		     , SP.DELIVER_PLACE_ID
+		     , SP.IMP_UID
+		     , DP.DEL_ALIAS
+		     , DP.DEL_ADDRESS
+		     , DP.DEL_DETAIL_ADDRESS
+		     , DP.ZIP_CODE
+		     , DP.RECIPIENT
+		     , DP.RECIPIENT_PHONE_NUMBER
+		  FROM SUB_PAY SP
+		 INNER JOIN DELIVER_PLACE DP 
+		    ON DP.DELIVER_PLACE_ID = SP.DELIVER_PLACE_ID
+		 WHERE SP.MEMBER_ID = #{_parameter}
+		   AND SP.CANCEL_DATE IS NOT NULL
+	</select>
+	
+	<update id="cancleOneSubpay" parameterType="string">
+		UPDATE SUB_PAY 
+		   SET CANCEL_DATE = SYSDATE 
+		 WHERE SUB_PAY_ID = #{_parameter}
+	</update>
+	
+	<insert id="createNewPayments" parameterType="com.cookccook.app.subscribe.vo.PaymentsVO">
+		INSERT INTO PAYMENTS
+		 (IMP_UID
+		, MERCHANT_UID)
+		VALUES
+		 (#{impUid}
+		, #{merchantUid})
+	</insert>
+	
+	<select id="getPaymentByImpUid" parameterType="string" resultType="com.cookccook.app.subscribe.vo.PaymentsVO">
+		SELECT IMP_UID
+		     , MERCHANT_UID
+		  FROM PAYMENTS
+		 WHERE IMP_UID = #{_parameter}
+	</select>
+
+	<insert id="createNewSubscribe" parameterType="com.cookccook.app.subscribe.vo.SubscribeVO">
+		INSERT INTO SUBSCRIBE
+		 (SUBSCRIBE_ID
+		, SUB_CHOICE
+		, SUB_PRICE
+		, SUB_START_DATE
+		, SUB_END_DATE)
+		VALUES
+		 (('AH' || LPAD(SEQ_SUBSCRIBE_PK.NEXTVAL, 6, '0'))
+		, #{subChoice}
+		, #{subPrice}
+		<if test='subChoice == "2주 채소 상" or subChoice == "2주 육류 상"'>, (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 1 ) FROM DUAL)
+		, (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 1 ) + 14 FROM DUAL))</if>
+		<if test='subChoice == "2주 채소 하" or subChoice == "2주 육류 하"'>, (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 1 ) + 14 FROM DUAL)
+		, (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 2 ) FROM DUAL))</if>
+		<if test='subChoice == "4주 채소" or subChoice == "4주 육류"'>, (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 1 ) FROM DUAL)
+		, (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 2 ) FROM DUAL))</if>
+	</insert>
+	
+	<select id="getIngredientsByIngredientName" parameterType="string" resultType="com.cookccook.app.recommend.vo.IngredientVO">
+		SELECT *
+		  FROM INGREDIENT
+		 WHERE INGREDIENT_NAME = #{_parameter}
+	</select>
+	
+	<select id="getSubscribeList" parameterType="string" resultType="com.cookccook.app.subscribe.vo.SubscribeVO">
+		SELECT *
+		  FROM SUBSCRIBE
+		 WHERE <![CDATA[ROWNUM <= 3]]>
+		   AND SUB_CHOICE LIKE '%' || #{_parameter} || '%' 
+		 ORDER BY SUBSCRIBE_ID DESC
+	</select>
+	
+	<insert id="createNewSubIng" parameterType="com.cookccook.app.subscribe.vo.SubIngVO">
+		INSERT INTO SUB_ING
+		 (SUB_ING_ID
+		, INGREDIENT_ID
+		, SUBSCRIBE_ID
+		, SUB_ING_OPT)
+		VALUES
+		 (('AL' || LPAD(SEQ_SUB_ING_PK.NEXTVAL, 6, '0'))
+		, #{ingredientId}
+		, #{subscribeId}
+		, #{subIngOpt})
+	</insert>
+	
+	<select id="getIngredientList" resultType="com.cookccook.app.recommend.vo.IngredientVO">
+		SELECT *
+		  FROM INGREDIENT
+	</select>
+	
+	<select id="getOneSubscribe" parameterType="string" resultType="com.cookccook.app.subscribe.vo.SubscribeVO">
+		SELECT *
+		  FROM SUBSCRIBE
+		 WHERE <![CDATA[SUB_START_DATE >= (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 1 ) + 14 FROM DUAL)]]>
+		   AND SUB_CHOICE LIKE '%' || #{_parameter} || '%'
+	</select>
+	
+	<select id="getSubscribeListBySubChoice" parameterType="string" resultType="com.cookccook.app.subscribe.vo.SubscribeVO">
+		SELECT *
+		  FROM SUBSCRIBE
+		 WHERE <![CDATA[SUB_START_DATE >= (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 1 ) FROM DUAL)]]>
+		   AND <![CDATA[SUB_END_DATE <= (SELECT ADD_MONTHS( TRUNC(SYSDATE ,'MM'), 2) FROM DUAL)]]>
+		   AND SUB_CHOICE LIKE '%' || #{_parameter} || '%'
+	</select>
+	
+	<delete id="deleteSubIngsBySubscribeId" parameterType="string">
+		DELETE FROM SUB_ING
+		 WHERE SUBSCRIBE_ID = #{_parameter}
+	</delete>
+	
+	<select id="getSubIngListBySubscribeId" parameterType="string" resultMap="SubIngVOMap">
+		SELECT SI.SUB_ING_ID
+		     , SI.INGREDIENT_ID
+		     , SI.SUBSCRIBE_ID
+		     , SI.SUB_ING_OPT
+		     , I.INGREDIENT_NAME 
+		  FROM SUB_ING SI
+		 INNER JOIN SUBSCRIBE S 
+		    ON SI.SUBSCRIBE_ID = S.SUBSCRIBE_ID 
+		 INNER JOIN INGREDIENT I 
+		    ON SI.INGREDIENT_ID = I.INGREDIENT_ID
+		 WHERE SI.SUBSCRIBE_ID = #{_parameter}
+	</select>
+	
+	<insert id="createIngredient" parameterType="com.cookccook.app.recommend.vo.IngredientVO">
+		INSERT INTO INGREDIENT
+		 (INGREDIENT_ID
+		, INGREDIENT_NAME
+		, EXPIRE_DATE
+		, ING_CLASS)
+		VALUES
+		 ('ING' || LPAD(SEQ_ART_ING_PK.NEXTVAL, 6, '0')
+		, #{ingredientName}
+		, NULL
+		, 1)
+	</insert>
+</mapper>

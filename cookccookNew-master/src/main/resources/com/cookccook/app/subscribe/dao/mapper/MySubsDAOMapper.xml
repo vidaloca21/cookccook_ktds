@@ -1,0 +1,408 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cookccook.app.subscribe.dao.MySubsDAO">
+
+	<!-- getMySubsInfo -->
+	<resultMap type="com.cookccook.app.subscribe.vo.SubPayVO"
+		id="SubPayVOMap" autoMapping="true">
+		<id column="SUB_PAY_ID" property="subPayId" />
+		<association property="subscribeVO"
+			javaType="com.cookccook.app.subscribe.vo.SubscribeVO"
+			autoMapping="true">
+			<id column="SUBSCRIBE_ID" property="subscribeId" />
+		</association>
+	</resultMap>
+
+	<resultMap type="com.cookccook.app.recommend.vo.IngredientVO"
+		id="IngredientVOMap" autoMapping="true">
+		<id column="INGREDIENT_ID" property="ingredientId" />
+		<collection property="subIngList" javaType="collection"
+			ofType="com.cookccook.app.subscribe.vo.SubIngVO" autoMapping="true">
+			<id column="SUB_ING_ID" property="subIngId" />
+			<association property="subscribeVO"
+				javaType="com.cookccook.app.subscribe.vo.SubscribeVO"
+				autoMapping="true">
+				<id column="SUBSCRIBE_ID" property="subscribeId" />
+			</association>
+			<collection property="subPayList" javaType="collection"
+				ofType="com.cookccook.app.subscribe.vo.SubPayVO" autoMapping="true">
+				<id column="SUB_PAY_ID" property="subPayId" />
+			</collection>
+		</collection>
+	</resultMap>
+	
+	<resultMap type="com.cookccook.app.subscribe.vo.SubscribeVO"
+				id="subscribeVOMap"
+				autoMapping ="true">
+		<collection property="subIngList" javaType="collection"
+			ofType="com.cookccook.app.subscribe.vo.SubIngVO" autoMapping="true">
+			<id column="SUB_ING_ID" property="subIngId" />
+			<association property="ingredientVO"
+				javaType="com.cookccook.app.recommend.vo.IngredientVO"
+				autoMapping="true">
+				<id column="INGREDIENT_ID" property="ingredientId" />
+			</association>
+		 </collection>
+		 <collection property="subPayList" javaType="collection"
+				ofType="com.cookccook.app.subscribe.vo.SubPayVO" autoMapping="true">
+				<id column="SUB_PAY_ID" property="subPayId" />
+		 </collection>
+	</resultMap>
+
+	<resultMap type="com.cookccook.app.subscribe.vo.SubPayVO"
+		id="SubPayVOListWithDeliveryInfo" autoMapping="true">
+		<id column="SUB_PAY_ID" property="subPayId" />
+		<association property="subscribeVO"
+			javaType="com.cookccook.app.subscribe.vo.SubscribeVO"
+			autoMapping="true">
+			<id column="SUBSCRIBE_ID" property="subscribeId" />
+		</association>
+		<association property="memberVO"
+			javaType="com.cookccook.app.member.vo.MemberVO" autoMapping="true">
+			<id column="MEMBER_ID" property="memberId" />
+			<association property="deliverPlaceVO"
+				javaType="com.cookccook.app.shop.vo.DeliverPlaceVO"
+				autoMapping="true">
+				<id column="DELIVER_PLACE_ID" property="deliverPlaceId" />
+			</association>
+		</association>
+	</resultMap>
+
+	<resultMap type="com.cookccook.app.article.vo.RecipeVO"
+		id="recipeVOMap" autoMapping="true">
+		<id column="ARTICLE_ID" property="articleId" />
+		<association property="articleVO"
+			javaType="com.cookccook.app.article.vo.ArticleVO" autoMapping="true">
+			<id column="ARTICLE_ID" property="articleId" />
+		</association>
+	</resultMap>
+
+	<resultMap type="com.cookccook.app.article.vo.ArticleVO"
+		id="articleVOMap" autoMapping="true">
+		<id column="ARTICLE_ID" property="articleId" />
+		<association property="recipeVO"
+					javaType="com.cookccook.app.article.vo.RecipeVO"
+					autoMapping="true">
+			<id column="ARTICLE_ID" property="articleId" />
+		</association>
+		<collection property="artIngVOList" javaType="collection"
+			ofType="com.cookccook.app.recommend.vo.ArtIngVO" autoMapping="true">
+			<id column="ART_ING_ID" property="artIngId" />
+			<association property="ingredientVO"
+				javaType="com.cookccook.app.recommend.vo.IngredientVO"
+				autoMapping="true">
+				<id column="INGREDIENT_ID" property="ingredientId" />
+			</association>
+		</collection>
+	</resultMap>
+
+	<resultMap type="com.cookccook.app.subscribe.vo.SubscribeVO"
+		id="SubscribeMap" autoMapping="true">
+		<id column="SUBSCRIBE_ID" property="subscribeId" />
+		<collection property="subPayList" 
+			ofType="com.cookccook.app.subscribe.vo.SubPayVO" autoMapping="true">
+			<id column="SUB_PAY_ID" property="subPayId" />
+			<association property="memberVO"
+				javaType="com.cookccook.app.member.vo.MemberVO" autoMapping="true">
+				<id column="MEMBER_ID" property="memberId" />
+				<association property="deliverPlaceVO"
+					javaType="com.cookccook.app.shop.vo.DeliverPlaceVO"
+					autoMapping="true">
+					<id column="DELIVER_PLACE_ID" property="deliverPlaceId" />
+				</association>
+			</association>
+		</collection>
+		<collection property="subIngList" 
+			ofType="com.cookccook.app.subscribe.vo.SubIngVO" autoMapping="true">
+			<id column="SUB_ING_ID" property="subIngId" />
+			<collection property="ingredientList"
+				ofType="com.cookccook.app.recommend.vo.IngredientVO"
+				autoMapping="true">
+				<id column="INGREDIENT_ID" property="ingredientId" />
+			</collection>
+		</collection>
+	</resultMap>
+
+	
+
+	<select id="getMySubsInfo" parameterType="string"
+		resultMap="SubPayVOMap">
+
+		SELECT *
+		FROM (SELECT SP.MEMBER_ID
+		, SP.SUB_PAY_ID
+		, SP.IMP_UID
+		, S.SUBSCRIBE_ID
+		, CASE
+		WHEN S.SUB_CHOICE LIKE '%' || '채소' || '%' THEN '그린 식단'
+		WHEN S.SUB_CHOICE LIKE '%' || '육류' || '%' THEN '밸런스 식단'
+		END SUBS_CATEGORY
+		, CASE
+		WHEN S.SUB_CHOICE LIKE '%' || '2주' || '%' THEN '2주 마다'
+		WHEN S.SUB_CHOICE LIKE '%' || '4주' || '%' THEN '4주 마다'
+		END SUBS_CYCLE
+		, S.SUB_PRICE
+		FROM SUB_PAY sp
+		RIGHT JOIN SUBSCRIBE s
+		ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID
+		WHERE SP.MEMBER_ID = #{_parameter}
+		AND SP.CANCEL_DATE IS NULL)
+		WHERE ROWNUM = 1
+
+	</select>
+
+	<select id="getMyNextSubName" parameterType="string"
+		resultMap="SubPayVOMap">
+
+		SELECT *
+		FROM (SELECT SP.PAY_DATE
+			, SP.SUBSCRIBE_ID
+			, CASE WHEN SP.CANCEL_DATE IS NULL AND SP.PAY_DATE <![CDATA[<=]]> SYSDATE
+				   THEN TO_CHAR(SP.PAY_DATE + INTERVAL '14' DAY, 'YYYY-MM-DD')
+				   ELSE TO_CHAR(SP.PAY_DATE, 'YYYY-MM-DD')
+					END AS NEXT_DELIVERY_DATE
+		FROM SUB_PAY sp
+		WHERE SP.MEMBER_ID = #{_parameter}
+		AND SP.CANCEL_DATE IS NULL
+		ORDER BY NEXT_DELIVERY_DATE DESC )
+		WHERE ROWNUM = 1
+
+	</select>
+
+	<select id="getMyNextSubItem" parameterType="string"
+		resultMap="SubscribeMap">
+
+SELECT I.INGREDIENT_NAME
+     , si.SUB_ING_OPT
+     , s.SUB_START_DATE
+     , s.SUB_CHOICE
+     , s.SUBSCRIBE_ID
+     , SP.PAY_DATE
+     , CASE
+         WHEN S.SUB_CHOICE LIKE '%' || '채소' || '%' THEN '그린 식단'
+         WHEN S.SUB_CHOICE LIKE '%' || '육류' || '%' THEN '밸런스 식단'
+        END SUBS_CATEGORY
+     , SP.SUB_PAY_ID
+     , SI.SUB_ING_ID
+     , I.INGREDIENT_ID 
+ FROM SUBSCRIBE s
+ LEFT JOIN SUB_PAY sp
+   ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID 
+ JOIN SUB_ING si 
+   ON S.SUBSCRIBE_ID =SI.SUBSCRIBE_ID 
+ JOIN INGREDIENT i 
+   ON SI.INGREDIENT_ID = I.INGREDIENT_ID 
+ WHERE S.SUB_START_DATE <![CDATA[<=]]> ( SELECT CASE 
+									               	WHEN S.SUB_CHOICE LIKE '%' || '2주' || '%' 
+									               	THEN TO_CHAR(SP.PAY_DATE + INTERVAL '14' DAY, 'YYYY-MM-DD')
+									               	WHEN S.SUB_CHOICE LIKE '%' || '4주' || '%'
+									               	THEN TO_CHAR(SP.PAY_DATE + INTERVAL '28' DAY, 'YYYY-MM-DD')
+								  		        END AS NEXT_DEL_DATE
+										  FROM SUBSCRIBE s 
+										  JOIN SUB_PAY sp 
+										    ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID 
+										 WHERE SP.MEMBER_ID = #{_parameter}
+										   AND SP.CANCEL_DATE IS NULL )
+   AND S.SUB_END_DATE <![CDATA[>=]]> ( SELECT CASE 
+											      WHEN S.SUB_CHOICE LIKE '%' || '2주' || '%'
+											      THEN TO_CHAR(SP.PAY_DATE + INTERVAL '14' DAY, 'YYYY-MM-DD')
+											      WHEN S.SUB_CHOICE LIKE '%' || '4주' || '%'
+											      THEN TO_CHAR(SP.PAY_DATE + INTERVAL '28' DAY, 'YYYY-MM-DD')
+											  END AS NEXT_DEL_DATE
+									     FROM SUBSCRIBE s 
+									     JOIN SUB_PAY sp 
+									       ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID 
+									    WHERE SP.MEMBER_ID = #{_parameter}
+									      AND SP.CANCEL_DATE IS NULL )
+	 AND INSTR(s.SUB_CHOICE, (SELECT CASE 
+							  		WHEN S.SUB_CHOICE LIKE '%2주 육류%' THEN '2주 육류'
+							  		WHEN S.SUB_CHOICE LIKE '%2주 채소%' THEN '2주 채소'
+							  		WHEN S.SUB_CHOICE LIKE '%4주 육류%' THEN '4주 육류'
+							  		WHEN S.SUB_CHOICE LIKE '%4주 채소%' THEN '4주 채소'
+							  	  END AS SUB_CYCLE
+  						   FROM SUBSCRIBE s 
+  						   JOIN SUB_PAY sp 
+  						     ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID 
+  						  WHERE SP.MEMBER_ID = #{_parameter}
+  						    AND SP.CANCEL_DATE IS NULL) ) <![CDATA[>]]> 0
+
+	</select>
+
+	<!-- 주말인 경우, 배송 일자 평일로 변경 -->
+	<select id="getLatestDeliveryDate" parameterType="string">
+		SELECT CASE
+		WHEN TO_CHAR(PAY_DATE + INTERVAL '1' DAY, 'D') BETWEEN 1 AND 6
+		THEN TO_CHAR(PAY_DATE + INTERVAL '1' DAY, 'YYYY-MM-DD')
+		WHEN TO_CHAR(PAY_DATE + INTERVAL '1' DAY, 'D') IN (7)
+		THEN TO_CHAR(PAY_DATE + INTERVAL '2' DAY, 'YYYY-MM-DD')
+		END DELIVERED_DATE
+		FROM SUB_PAY sp
+		WHERE CANCEL_DATE IS NULL
+		AND MEMBER_ID = #{_parameter}
+	</select>
+
+	<select id="getLatestSubItems" parameterType="string"
+		resultMap="IngredientVOMap">
+		SELECT I.INGREDIENT_NAME
+		, SI.SUB_ING_OPT
+		FROM INGREDIENT i
+		JOIN SUB_ING si
+		ON i.INGREDIENT_ID = si.INGREDIENT_ID
+		WHERE SI.SUBSCRIBE_ID = (SELECT SUBSCRIBE_ID
+		FROM SUB_PAY
+		WHERE CANCEL_DATE IS NULL
+		AND MEMBER_ID = #{_parameter})
+
+	</select>
+
+	<select id="getPrevSubInfos" parameterType="string"
+		resultMap="SubPayVOListWithDeliveryInfo">
+		SELECT PAY_DATE
+		, TO_CHAR(PAY_DATE + INTERVAL '2' DAY, 'YYYY-MM-DD') AS DELIVERED_DATE
+		, S.SUB_PRICE
+		, SP.PAY_METHOD
+		, DP.DEL_ALIAS
+		, DP.DEL_ADDRESS
+		, DP.DEL_DETAIL_ADDRESS
+		FROM SUB_PAY sp
+		JOIN SUBSCRIBE s
+		ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID
+		JOIN MEMBER m
+		ON SP.MEMBER_ID = M.MEMBER_ID
+		LEFT JOIN DELIVER_PLACE dp
+		ON M.MEMBER_ID = DP.MEMBER_ID
+		WHERE M.MEMBER_ID = #{_parameter}
+		AND TO_CHAR(S.SUB_START_DATE) <![CDATA[<=]]>
+		SYSDATE
+		ORDER BY PAY_DATE DESC
+	</select>
+
+	<select id="getPrevSubItems" parameterType="string"
+		resultMap="IngredientVOMap">
+		SELECT S.SUBSCRIBE_ID
+		, I.INGREDIENT_NAME
+		, SI.SUB_ING_OPT
+		FROM INGREDIENT i
+		JOIN SUB_ING si
+		ON I.INGREDIENT_ID = SI.INGREDIENT_ID
+		JOIN SUBSCRIBE s
+		ON S.SUBSCRIBE_ID = SI.SUBSCRIBE_ID
+		JOIN SUB_PAY sp
+		ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID
+		WHERE SP.MEMBER_ID = #{_parameter}
+		AND TO_CHAR(S.SUB_START_DATE) <![CDATA[<]]>
+		SYSDATE
+	</select>
+
+	<select id="getPrevHistory" parameterType="String"
+		resultMap="SubscribeMap">
+		SELECT TO_CHAR(SP.PAY_DATE, 'YYYY-MM-DD') AS PAY_DATE
+		     , TO_CHAR(SP.PAY_DATE + INTERVAL '1' DAY, 'YYYY-MM-DD') AS DELIVERED_DATE
+		     , S.SUB_PRICE
+		     , CASE
+		         WHEN S.SUB_CHOICE LIKE '%' || '채소' || '%' THEN '그린 식단'
+		         WHEN S.SUB_CHOICE LIKE '%' || '육류' || '%' THEN '밸런스 식단'
+		        END SUB_CHOICE
+		     , SP.PAY_METHOD
+		     , DP.DEL_ALIAS
+		     , DP.DEL_ADDRESS
+		     , DP.DEL_DETAIL_ADDRESS
+		     , I.INGREDIENT_NAME
+		     , SI.SUB_ING_OPT
+		     , S.SUBSCRIBE_ID
+		     , SP.SUB_PAY_ID 
+		     , M.MEMBER_ID
+		     , DP.DELIVER_PLACE_ID 
+		     , SI.SUB_ING_ID
+             , I.INGREDIENT_ID
+		  FROM SUB_PAY SP
+		  JOIN SUBSCRIBE S
+		    ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID
+		  JOIN SUB_ING SI
+		    ON S.SUBSCRIBE_ID = SI.SUBSCRIBE_ID
+		  JOIN INGREDIENT I
+		    ON I.INGREDIENT_ID = SI.INGREDIENT_ID
+		  JOIN MEMBER M
+		    ON SP.MEMBER_ID = M.MEMBER_ID
+		  LEFT JOIN DELIVER_PLACE DP
+		    ON M.MEMBER_ID = DP.MEMBER_ID
+		 WHERE M.MEMBER_ID = #{_parameter}
+		   AND S.SUB_START_DATE <![CDATA[<=]]> SYSDATE
+		 ORDER BY SP.PAY_DATE DESC
+	</select>
+
+	<select id="getIngRecom" parameterType="string"
+		resultMap="articleVOMap">
+		SELECT A.ARTICLE_ID
+		, I.INGREDIENT_NAME
+		FROM ARTICLE A
+		JOIN ART_ING ai
+		ON A.ARTICLE_ID = AI.ARTICLE_ID
+		JOIN INGREDIENT i
+		ON AI.INGREDIENT_ID = I.INGREDIENT_ID
+		WHERE I.INGREDIENT_ID = (SELECT INGREDIENT_ID
+		FROM (SELECT I.INGREDIENT_ID
+		FROM INGREDIENT i
+		JOIN SUB_ING si
+		ON i.INGREDIENT_ID = si.INGREDIENT_ID
+		WHERE SI.SUBSCRIBE_ID = (SELECT SUBSCRIBE_ID
+		FROM SUB_PAY
+		WHERE CANCEL_DATE IS NULL
+		AND MEMBER_ID = #{memberId})
+		ORDER BY DBMS_RANDOM.value)
+		WHERE ROWNUM = 1)
+		AND ROWNUM = 1
+
+	</select>
+
+	<select id="getArtInfoByArtId" parameterType="string"
+		resultMap="recipeVOMap">
+		SELECT a.ARTICLE_ID
+		, a.TITLE
+		, r.ATT_IMG_SMALL
+		FROM ARTICLE a
+		JOIN RECIPE r
+		ON a.ARTICLE_ID = r.ARTICLE_ID
+		WHERE a.ARTICLE_ID = #{_parameter}
+	</select>
+
+<select id="getMySubRecom" parameterType="string"
+		resultMap="articleVOMap">
+SELECT A.ARTICLE_ID
+     , A.TITLE 
+     , R.ATT_IMG_SMALL 
+     , I.INGREDIENT_NAME 
+  FROM ARTICLE a 
+  JOIN RECIPE r 
+    ON A.ARTICLE_ID = R.ARTICLE_ID 
+  JOIN ART_ING ai 
+    ON A.ARTICLE_ID = AI.ARTICLE_ID 
+  JOIN INGREDIENT i 
+    ON AI.INGREDIENT_ID = I.INGREDIENT_ID 
+ WHERE I.INGREDIENT_ID = (SELECT INGREDIENT_ID
+							FROM (SELECT IG.INGREDIENT_ID, IG.INGREDIENT_NAME
+						            FROM (SELECT I.INGREDIENT_ID 
+						          	           , I.INGREDIENT_NAME 
+						          	        FROM SUBSCRIBE s 
+						          	        JOIN SUB_ING si 
+						          	          ON S.SUBSCRIBE_ID = SI.SUBSCRIBE_ID 
+						          	        JOIN INGREDIENT i 
+						          	          ON I.INGREDIENT_ID = SI.INGREDIENT_ID 
+						          	       WHERE S.SUBSCRIBE_ID IN (SELECT  SUBSCRIBE_ID
+	        								                          FROM (SELECT S.SUBSCRIBE_ID 
+	        								   	                             	 , S.SUB_CHOICE 
+	        								   	                               FROM SUBSCRIBE s 
+	        								   	                               JOIN SUB_PAY sp 
+	        								   	                                 ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID
+	        								   	                              WHERE S.SUB_START_DATE <![CDATA[<]]> SYSDATE
+	        								   	                                AND SP.CANCEL_DATE IS NULL
+	        								   	                                AND SP.MEMBER_ID = #{_parameter}
+	        								   	                              ORDER BY S.SUB_START_DATE DESC )
+	        								                                 WHERE ROWNUM <![CDATA[<=]]> 2)) IG
+	          							ORDER BY DBMS_RANDOM.value)
+ 						WHERE ROWNUM = 1)
+ AND ROWNUM <![CDATA[<=]]> 5
+ </select>
+</mapper>

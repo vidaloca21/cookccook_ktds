@@ -1,0 +1,92 @@
+/*@font-face {
+    font-family: 'NEXONBazzi';
+    font-weight: normal; 
+    font-style: normal; 
+    src: url(https://cdn.jsdelivr.net/gh/webfontworld/NEXONGothic/NEXONBazzi.woff) format('woff');
+    font-display: swap;
+}
+
+.navBar {
+    grid-column: 1/4;
+    grid-row: 1/2;
+    display: flex;
+    align-items: baseline;
+    background-color: #FF7157;
+}
+.navBar > .logo {
+}
+.navBar > .logo > img {
+    width: 80px;
+    height: 80px;
+}
+.navBar > .link {
+	margin-left: 10%;
+}
+.navBar > .link > ul {
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: baseline;
+}
+.navBar > .link > ul >li {
+    display: inline-block;
+    padding: 0;
+    margin-right: 12px;
+    font-weight: bold;
+    font-size: 32px;
+}
+*/
+
+.body {
+    display: grid;
+    grid-template-columns: minmax(100px, 1fr) 1200px minmax(100px, 1fr);
+    grid-template-rows: 1fr;
+}
+.container {
+    display: flex;
+    grid-column: 2/3;
+    align-items: center;
+    justify-content: center;
+}
+
+#subMainArticle {
+	position: relative;
+	top: 50px;
+	left: 20px;
+}
+#subMainArticle > h3 {
+    margin: 0 0 20px 0;
+    color: #2B1512;
+    font-size: 24pt;
+}
+#subMainArticle > h4 {
+    margin: 0;
+    padding: 0;
+    color: #2B1512;
+    font-size: 16pt;
+}
+#subMainImg {
+    display: inline-block;
+    width: 100%;
+    height: auto;
+}
+#subMainImg > img {
+    width: 100%;
+    height: auto;
+}
+#subBtn {
+    position: relative;
+    width: 18%;
+    height: 60px;
+    bottom: 80px;
+    left: 75%;
+    font-size: 15pt;
+    font-weight: bold;
+    text-align: center;
+    background-color: #FB8F67;
+    color: #44211C;
+    border: none;
+    border-radius: 10px;
+    align-content: center;
+}

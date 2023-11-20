@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cookccook.app.seller.dao.SellerDAO">
+	<select id="getProductAllCount" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PRODUCT
+		 WHERE MEMBER_ID = #{_parameter}
+		   AND PRD_HIDDEN_DATE IS NULL
+	</select>
+	
+	<select id="getOnSaleCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PRODUCT
+		 WHERE MEMBER_ID = #{_parameter}
+		   AND SALE_STATE = 1
+		   AND PRD_HIDDEN_DATE IS NULL
+	</select>
+	
+	<select id="getSoldoutCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PRODUCT
+		 WHERE MEMBER_ID = #{_parameter}
+		   AND SALE_STATE = 2
+		   AND PRD_HIDDEN_DATE IS NULL
+	</select>
+	
+	<select id="getEndSaleCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PRODUCT
+		 WHERE MEMBER_ID = #{_parameter}
+		   AND SALE_STATE = 3
+		   AND PRD_HIDDEN_DATE IS NULL
+	</select>
+	
+	<resultMap type="com.cookccook.app.shop.vo.ProductVO" id="productVOMap">
+		<id column="PRODUCT_ID" property="productId"/>
+		<result column="MEMBER_ID" property="memberId"/>
+		<result column="INGREDIENT_ID" property="ingredientId"/>
+		<result column="PRD_NAME" property="prdName"/>
+		<result column="PRD_PRICE" property="prdPrice"/>
+		<result column="PRD_ORIGIN" property="prdOrigin"/>
+		<result column="PRD_CONTENT" property="prdContent"/>
+		<result column="SALE_STATE" property="saleState"/>
+		<result column="STOCK" property="stock"/>
+		<result column="PRD_REGIST_DATE" property="prdRegistDate"/>
+		<result column="PRD_HIDDEN_DATE" property="prdHiddenDate"/>
+		<association property="memberVO" javaType="com.cookccook.app.member.vo.MemberVO">
+			<id column="MEMBER_ID" property="memberId"/>
+			<result column="MEM_NICKNAME" property="memNickname"/>
+		</association>
+		<association property="ingredientVO" javaType="com.cookccook.app.recommend.vo.IngredientVO">
+			<id column="INGREDIENT_ID" property="ingredientId"/>
+			<result column="INGREDIENT_NAME" property="ingredientName"/>
+		</association>
+	</resultMap>
+	
+	<resultMap type="com.cookccook.app.shop.vo.PurchaseProductVO" id="PurchaseProductVOMap" autoMapping="true">
+		<id column="PURCHASE_PRODUCT_ID" property="purchaseProductId"/>
+		<association property="purchaseVO" javaType="com.cookccook.app.shop.vo.PurchaseVO" autoMapping="true">
+			<id column="PURCHASE_ID" property="purchaseId"/>
+			<association property="deliverPlaceVO" javaType="com.cookccook.app.shop.vo.DeliverPlaceVO" autoMapping="true">
+				<id column="DELIVER_PLACE_ID" property="deliverPlaceId"/>
+			</association>
+			<association property="memberVO" javaType="com.cookccook.app.member.vo.MemberVO" autoMapping="true">
+				<id column="MEMBER_ID" property="memberId"/>
+			</association>
+		</association>
+		<association property="choiceVO" javaType="com.cookccook.app.shop.vo.ChoiceVO" autoMapping="true">
+			<id column="CHOICE_ID" property="choiceId"/>
+			<association property="productVO" javaType="com.cookccook.app.shop.vo.ProductVO" autoMapping="true">
+				<id column="PRODUCT_ID" property="productId"/>
+			</association>
+		</association>
+		<association property="cancelVO" javaType="com.cookccook.app.shop.vo.CancelVO" autoMapping="true">
+			<id column="CANCEL_ID" property="cancelId"/>
+		</association>
+	</resultMap>
+	
+	<resultMap type="com.cookccook.app.shop.vo.CancelVO" id="cancelVOMap" autoMapping="true">
+		<id column="CANCEL_ID" property="cancelId"/>
+		<association property="purchaseVO" javaType="com.cookccook.app.shop.vo.PurchaseVO" autoMapping="true">
+			<id column="PURCHASE_ID" property="purchaseId"/>
+			<association property="memberVO" javaType="com.cookccook.app.member.vo.MemberVO" autoMapping="true">
+				<id column="MEMBER_ID" property="memberId"/>
+			</association>
+			<collection property="purchaseProductList" javaType="com.cookccook.app.shop.vo.PurchaseProductVO" autoMapping="true">
+				<id column="PURCHASE_PRODUCT_ID" property="purchaseProductId"/>
+				<association property="choiceVO" javaType="com.cookccook.app.shop.vo.ChoiceVO" autoMapping="true">
+					<id column="CHOICE_ID" property="choiceId"/>
+					<association property="productVO" javaType="com.cookccook.app.shop.vo.ProductVO" autoMapping="true">
+						<id column="PRODUCT_ID" property="productId"/>
+					</association>
+				</association>
+			</collection>
+		</association>
+	</resultMap>
+	
+	<select id="getAllPurCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 INNER JOIN CHOICE C 
+		    ON C.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = C.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+	</select>
+	
+	<select id="getOrderCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 INNER JOIN CHOICE C 
+		    ON C.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = C.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND PU.PUR_CANCEL_STATUS IS NULL
+		   AND PP.PUR_STATE = 1
+	</select>
+	
+	<select id="getPreparationCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 INNER JOIN CHOICE C 
+		    ON C.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = C.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND PU.PUR_CANCEL_STATUS IS NULL
+		   AND PP.PUR_STATE = 2
+	</select>
+	
+	<select id="getDeliveringCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 INNER JOIN CHOICE C 
+		    ON C.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = C.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND PU.PUR_CANCEL_STATUS IS NULL
+		   AND PP.PUR_STATE = 3
+	</select>
+	
+	<select id="getCompleteDeliverCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 INNER JOIN CHOICE C 
+		    ON C.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = C.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND PU.PUR_CANCEL_STATUS IS NULL
+		   AND PP.PUR_STATE = 4
+	</select>
+	
+	<select id="getCancleCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN CHOICE CH
+		    ON CH.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = CH.PRODUCT_ID
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND PU.PUR_CANCEL_STATUS IS NOT NULL
+	</select>
+	
+	<select id="getAllProductBySeller" parameterType="string" resultMap="productVOMap">
+		SELECT P.PRODUCT_ID
+		     , P.MEMBER_ID
+		     , P.INGREDIENT_ID
+		     , P.PRD_NAME
+		     , P.PRD_PRICE
+		     , P.PRD_ORIGIN
+		     , P.PRD_CONTENT
+		     , P.SALE_STATE
+		     , P.STOCK
+		     , TO_CHAR(P.PRD_REGIST_DATE, 'YYYY-MM-DD HH24:MI:SS') PRD_REGIST_DATE
+		     , M.MEM_NICKNAME 	
+		     , I.INGREDIENT_NAME
+		  FROM PRODUCT P
+		 INNER JOIN MEMBER M 
+		    ON P.MEMBER_ID = M.MEMBER_ID
+		 INNER JOIN INGREDIENT I
+		    ON P.INGREDIENT_ID = I.INGREDIENT_ID
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND P.PRD_HIDDEN_DATE IS NULL
+		 ORDER BY P.PRODUCT_ID DESC
+	</select>
+	
+	<select id="getCompleteCntBySeller" parameterType="string" resultType="_int">
+		SELECT COUNT(1) 
+		  FROM PURCHASE_PRODUCT
+		 WHERE MEMBER_ID = #{_parameter}
+		   AND SALE_STATE = 4
+	</select>
+	
+	<insert id="createNewProduct" 
+			parameterType="com.cookccook.app.shop.vo.ProductVO">
+		<selectKey keyProperty="productId" resultType="string" order="BEFORE">
+			SELECT 'PRD' || LPAD(SEQ_CHOICE_PK.NEXTVAL, 6, '0')
+			  FROM DUAL
+		</selectKey>
+		
+		INSERT INTO PRODUCT 
+		 (PRODUCT_ID
+		, MEMBER_ID
+		, INGREDIENT_ID
+		, PRD_NAME
+		, PRD_PRICE
+		, PRD_ORIGIN
+		, PRD_CONTENT
+		, PRD_TITLE_IMG
+		, PRD_CONTENT_IMG
+		, PRD_TITLE_IMG_ORIGIN
+		, PRD_CONTENT_IMG_ORIGIN
+		, SALE_STATE
+		, STOCK
+		, PRD_REGIST_DATE
+		, PRD_HIDDEN_DATE)
+		VALUES
+		( #{productId}
+		, #{memberId}
+		, #{ingredientId}
+		, #{prdName}
+		, #{prdPrice}
+		, #{prdOrigin}
+		, #{prdContent}
+		, #{prdTitleImg}
+		, #{prdContentImg}
+		, #{prdTitleImgOrigin}
+		, #{prdContentImgOrigin}
+		, #{saleState}
+		, #{stock}
+		, SYSDATE
+		, NULL)
+	</insert>
+	
+	<select id="getOneProductBySeller" parameterType="string" resultMap="productVOMap">
+		SELECT PRODUCT_ID
+		     , MEMBER_ID
+		     , INGREDIENT_ID
+		     , PRD_NAME
+		     , PRD_PRICE
+		     , PRD_ORIGIN
+		     , PRD_CONTENT
+		     , SALE_STATE
+		     , STOCK
+		     , TO_CHAR(PRD_REGIST_DATE, 'YYYY-MM-DD HH24:MI:SS') PRD_REGIST_DATE
+		  FROM PRODUCT
+		 WHERE PRODUCT_ID = #{_parameter}
+		   AND PRD_HIDDEN_DATE IS NULL
+	</select>
+	
+	<!-- 로그인 구현 시 삭제 -->
+	<select id="getOneSeller" parameterType="string" resultType="com.cookccook.app.member.vo.MemberVO">
+		SELECT MEMBER_ID
+			 , MEM_EMAIL
+			 , MEM_FILEPATH
+			 , MEM_GRADE
+			 , MEM_NAME
+			 , MEM_NICKNAME
+			 , MEM_PASSWORD
+			 , ROLE
+		  FROM MEMBER
+		 WHERE MEMBER_ID = #{_parameter}
+	</select>
+	
+	<update id="updateOneProduct" parameterType="com.cookccook.app.shop.vo.ProductVO">
+		UPDATE PRODUCT
+		   SET INGREDIENT_ID = #{ingredientId}
+		     , PRD_NAME = #{prdName}
+		     , PRD_PRICE = #{prdPrice}
+		     , PRD_ORIGIN = #{prdOrigin}
+		     , PRD_CONTENT = #{prdContent}
+		     , PRD_TITLE_IMG = #{prdTitleImg}
+			 , PRD_CONTENT_IMG = #{prdContentImg}
+			 , PRD_TITLE_IMG_ORIGIN = #{prdTitleImgOrigin}
+			 , PRD_CONTENT_IMG_ORIGIN = #{prdContentImgOrigin}
+		     , SALE_STATE = #{saleState}
+		     , STOCK = #{stock}
+		 WHERE PRODUCT_ID = #{productId}
+	</update>
+	
+	<delete id="deleteChoiceByProduct" parameterType="string">
+		DELETE FROM CHOICE
+		 WHERE PRODUCT_ID = #{_parameter}
+	</delete>
+	
+	<update id="deleteOneProduct" parameterType="string">
+		UPDATE PRODUCT
+		   SET PRD_HIDDEN_DATE = SYSDATE
+		 WHERE PRODUCT_ID = #{_parameter}
+	</update>
+	
+	<select id="getAllIngredient" resultType="com.cookccook.app.recommend.vo.IngredientVO">
+		SELECT INGREDIENT_ID
+		     , INGREDIENT_NAME
+		     , EXPIRE_DATE
+		     , ING_CLASS
+		  FROM INGREDIENT
+	</select>
+	
+	<select id="getProductsBySearch" parameterType="com.cookccook.app.shop.vo.ProductSearchVO" resultMap="productVOMap">
+		SELECT PRODUCT_ID
+		     , MEMBER_ID
+		     , INGREDIENT_ID
+		     , PRD_NAME
+		     , PRD_PRICE
+		     , PRD_ORIGIN
+		     , PRD_CONTENT
+		     , SALE_STATE
+		     , STOCK
+		     , TO_CHAR(PRD_REGIST_DATE, 'YYYY-MM-DD HH24:MI:SS') PRD_REGIST_DATE
+		  FROM PRODUCT
+		 WHERE MEMBER_ID = #{memberId}
+		   AND PRD_HIDDEN_DATE IS NULL
+		   <if test='saleState != null and saleState != ""'>AND SALE_STATE = #{saleState}</if>
+		   <if test='productId != null and productId != ""'>AND PRODUCT_ID = #{productId}</if>
+		   <if test='prdName != null and prdName != ""'>AND PRD_NAME LIKE '%' || #{prdName} || '%'</if>
+		   <if test='startRegistDate != null and startRegistDate != ""'>AND <![CDATA[PRD_REGIST_DATE >= TO_DATE(#{startRegistDate}, 'YYYY-MM-DD')]]></if>
+		   <if test='endRegistDate != null and endRegistDate != ""'>AND <![CDATA[PRD_REGIST_DATE <= TO_DATE(#{endRegistDate}, 'YYYY-MM-DD') +1]]></if> 
+	</select>
+	
+	<select id="getLatestProductId"
+			parameterType="string">
+		SELECT PRODUCT_ID
+ 		  FROM PRODUCT
+		 WHERE 1=1
+		   AND PRD_REGIST_DATE = (SELECT MAX(PRD_REGIST_DATE) FROM PRODUCT)
+ 		   AND MEMBER_ID = #{_parameter}
+	</select>
+	
+	<select id="getProductByPrdName" parameterType="string" resultType="com.cookccook.app.shop.vo.ProductVO">
+		SELECT *
+		  FROM PRODUCT
+		 WHERE PRD_NAME = #{_parameter}
+	</select>
+	
+	<insert id="createNewChoice"
+			parameterType="com.cookccook.app.shop.vo.ChoiceVO">
+		INSERT INTO CHOICE
+			 ( CHOICE_ID
+			 , PRODUCT_ID
+			 , CHO_NAME
+			 , CHO_PRICE)
+		VALUES
+			 ( ('CHO' || LPAD(SEQ_CHOICE_PK.NEXTVAL, 6, '0'))
+			 , #{productId}
+			 , #{choName}
+			 , #{choPrice})
+	</insert>
+	
+	<select id="getPurchaseProductsBySeller" parameterType="string" resultMap="PurchaseProductVOMap">
+		SELECT PP.PURCHASE_PRODUCT_ID
+			 , PU.PURCHASE_ID 	
+		     , PU.PURCHASE_DATE 
+		     , M.MEM_NAME
+		     , M.MEM_PHONE_NUMBER 
+		     , PU.PAY_METHOD 
+		     , PP.PUR_PRD_PRICE 
+		     , PP.DELIVER_FEE
+		     , DP.DEL_ADDRESS 
+		     , DP.DEL_DETAIL_ADDRESS 
+		     , DP.ZIP_CODE 
+		     , DP.RECIPIENT 
+		     , DP.RECIPIENT_PHONE_NUMBER 
+		     , PU.DELIVER_MEMO 
+		     , P.PRD_NAME  
+		     , PP.PUR_STATE 
+		     , C.CHO_NAME 
+		     , PP.QUANTITY  
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 INNER JOIN CHOICE C 
+		    ON C.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = C.PRODUCT_ID 
+		 INNER JOIN DELIVER_PLACE DP 
+		    ON DP.DELIVER_PLACE_ID = PU.DELIVER_PLACE_ID 
+		 INNER JOIN "MEMBER" M 
+		    ON M.MEMBER_ID = PU.MEMBER_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND PU.PUR_CANCEL_STATUS IS NULL
+		 ORDER BY PU.PURCHASE_DATE DESC
+	</select>
+	
+	<select id="getPurchaseProductsBySearch" parameterType="com.cookccook.app.seller.vo.PurchaseSearchVO" resultMap="PurchaseProductVOMap">
+		SELECT PP.PURCHASE_PRODUCT_ID
+			 , PU.PURCHASE_ID 	
+		     , PU.PURCHASE_DATE 
+		     , M.MEM_NAME
+		     , M.MEM_PHONE_NUMBER 
+		     , PU.PAY_METHOD 
+		     , PP.PUR_PRD_PRICE 
+		     , PP.DELIVER_FEE
+		     , DP.DEL_ADDRESS 
+		     , DP.DEL_DETAIL_ADDRESS 
+		     , DP.ZIP_CODE 
+		     , DP.RECIPIENT 
+		     , DP.RECIPIENT_PHONE_NUMBER 
+		     , PU.DELIVER_MEMO 
+		     , P.PRD_NAME  
+		     , PP.PUR_STATE 
+		     , C.CHO_NAME 
+		     , PP.QUANTITY  
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 INNER JOIN CHOICE C 
+		    ON C.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = C.PRODUCT_ID 
+		 INNER JOIN DELIVER_PLACE DP 
+		    ON DP.DELIVER_PLACE_ID = PU.DELIVER_PLACE_ID 
+		 INNER JOIN "MEMBER" M 
+		    ON M.MEMBER_ID = PU.MEMBER_ID 
+		 WHERE P.MEMBER_ID = #{memberId}
+		   AND PU.PUR_CANCEL_STATUS IS NULL
+		   <if test='purchaseId != null and purchaseId != ""'>AND PU.PURCHASE_ID = #{purchaseId}</if>
+		   <if test='purState != null and purState != ""'>AND PP.PUR_STATE = #{purState}</if>
+		   <if test='memName != null and memName != ""'>AND M.MEM_NAME LIKE '%' || #{memName} || '%'</if>
+		   <if test='memPhoneNumber != null and memPhoneNumber != ""'>AND M.MEM_PHONE_NUMBER LIKE '%' || #{memPhoneNumber} || '%'</if>
+		   <if test='recipient != null and recipient != ""'>AND DP.RECIPIENT LIKE '%' || #{recipient} || '%'</if>
+		   <if test='recipientPhoneNumber != null and recipientPhoneNumber != ""'>AND DP.RECIPIENT_PHONE_NUMBER LIKE '%' || #{recipientPhoneNumber} || '%'</if>
+		   <if test='startDate != null and startDate != ""'>AND <![CDATA[PU.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]></if>
+		   <if test='endDate != null and endDate != ""'>AND <![CDATA[PU.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD') +1]]></if> 
+ 		ORDER BY PU.PURCHASE_DATE DESC
+	</select>
+	
+	<select id="getPurchaseProductByPurchaseProductId" parameterType="string" resultMap="PurchaseProductVOMap">
+		SELECT PP.PURCHASE_PRODUCT_ID
+			 , PU.PURCHASE_ID 	
+		     , PU.PURCHASE_DATE 
+		     , M.MEM_NAME
+		     , M.MEM_PHONE_NUMBER 
+		     , PU.PAY_METHOD 
+		     , PP.PUR_PRD_PRICE 
+		     , PP.DELIVER_FEE
+		     , DP.DEL_ADDRESS 
+		     , DP.DEL_DETAIL_ADDRESS 
+		     , DP.ZIP_CODE 
+		     , DP.RECIPIENT 
+		     , DP.RECIPIENT_PHONE_NUMBER 
+		     , PU.DELIVER_MEMO 
+		     , P.PRD_NAME  
+		     , PP.PUR_STATE 
+		     , C.CHO_NAME 
+		     , PP.QUANTITY  
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID 
+		 INNER JOIN CHOICE C 
+		    ON C.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = C.PRODUCT_ID 
+		 INNER JOIN DELIVER_PLACE DP 
+		    ON DP.DELIVER_PLACE_ID = PU.DELIVER_PLACE_ID 
+		 INNER JOIN "MEMBER" M 
+		    ON M.MEMBER_ID = PU.MEMBER_ID 
+		 WHERE PP.PURCHASE_PRODUCT_ID = #{_parameter}
+	</select>
+	
+	<update id="updateOnePurchaseProduct" parameterType="com.cookccook.app.shop.vo.PurchaseProductVO">
+		UPDATE PURCHASE_PRODUCT SET PUR_STATE = #{purState}
+		 WHERE PURCHASE_PRODUCT_ID = #{purchaseProductId}
+	</update>
+	
+	<update id="updateSellerRating" parameterType="string">
+	    UPDATE MEMBER
+		SET SELLER_RATING = (
+		    SELECT AVG(RATING)
+		    FROM REVIEW
+		    WHERE PRODUCT_ID IN (
+		        SELECT PRODUCT_ID
+		        FROM PRODUCT
+		        WHERE MEMBER_ID = #{memberId}
+		    )
+		)
+		WHERE MEMBER_ID = #{memberId}
+	</update>
+	
+	<select id="getChoiceByProductId" parameterType="string" resultType="com.cookccook.app.shop.vo.ChoiceVO">
+		SELECT *
+		  FROM CHOICE 
+		 WHERE PRODUCT_ID = #{_parameter}
+	</select>
+	
+	<select id="getCancleBySeller" parameterType="string" resultMap="PurchaseProductVOMap">
+		SELECT PP.PUR_STATE 
+		     , PU.PURCHASE_ID 
+		     , PU.PURCHASE_DATE 
+		     , PP.PUR_CANCEL_STATUS
+		     , P.PRD_NAME
+		     , CH.CHO_NAME 
+		     , PP.QUANTITY 
+		     , PP.PUR_PRD_PRICE
+		     , M.MEM_NAME
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN CHOICE CH
+		    ON CH.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = CH.PRODUCT_ID
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID
+		 INNER JOIN "MEMBER" M 
+		    ON M.MEMBER_ID = PU.MEMBER_ID  
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND PU.PUR_CANCEL_STATUS IS NOT NULL
+	</select>
+	
+	<select id="getCancleBySearch" parameterType="com.cookccook.app.seller.vo.PurchaseSearchVO" resultMap="PurchaseProductVOMap">
+		SELECT PP.PUR_STATE 
+		     , PU.PURCHASE_ID 
+		     , PU.PURCHASE_DATE 
+		     , PP.PUR_CANCEL_STATUS
+		     , P.PRD_NAME
+		     , CH.CHO_NAME 
+		     , PP.QUANTITY 
+		     , PP.PUR_PRD_PRICE
+		     , M.MEM_NAME
+		  FROM PURCHASE_PRODUCT PP
+		 INNER JOIN CHOICE CH
+		    ON CH.CHOICE_ID = PP.CHOICE_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = CH.PRODUCT_ID
+		 INNER JOIN PURCHASE PU
+		    ON PU.PURCHASE_ID = PP.PURCHASE_ID
+		 INNER JOIN "MEMBER" M 
+		    ON M.MEMBER_ID = PU.MEMBER_ID  
+		 WHERE P.MEMBER_ID = #{memberId}
+		   AND PU.PUR_CANCEL_STATUS IS NOT NULL
+		   <if test='purchaseId != null and purchaseId != ""'>AND PU.PURCHASE_ID = #{purchaseId}</if>
+		   <if test='memName != null and memName != ""'>AND M.MEM_NAME LIKE '%' || #{memName} || '%'</if>
+		   <if test='memPhoneNumber != null and memPhoneNumber != ""'>AND M.MEM_PHONE_NUMBER LIKE '%' || #{memPhoneNumber} || '%'</if>
+		   <if test='recipient != null and recipient != ""'>AND DP.RECIPIENT LIKE '%' || #{recipient} || '%'</if>
+		   <if test='recipientPhoneNumber != null and recipientPhoneNumber != ""'>AND DP.RECIPIENT_PHONE_NUMBER LIKE '%' || #{recipientPhoneNumber} || '%'</if>
+		   <if test='startDate != null and startDate != ""'>AND <![CDATA[PU.PURCHASE_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')]]></if>
+		   <if test='endDate != null and endDate != ""'>AND <![CDATA[PU.PURCHASE_DATE <= TO_DATE(#{endDate}, 'YYYY-MM-DD') +1]]></if> 
+ 		ORDER BY PU.PURCHASE_DATE DESC
+	</select>
+	
+	<select id="getOneCancleByPurchaseId" parameterType="string" resultType="com.cookccook.app.shop.vo.CancelVO">
+		SELECT CANCEL_ID
+		     , PURCHASE_ID
+		     , CAN_EXCUSE
+		     , CAN_DETAIL
+		  FROM CANCEL
+		 WHERE PURCHASE_ID = #{_parameter}
+	</select>
+	
+	<!-- <select id="calculateAverageRating" resultType="_double" parameterType="string">
+        SELECT AVG(RATING)
+        FROM REVIEW
+        WHERE PRODUCT_ID IN (
+            SELECT PRODUCT_ID
+            FROM REVIEW
+            WHERE MEMBER_ID = #{memberId}
+        )
+    </select>  -->
+	
+</mapper>

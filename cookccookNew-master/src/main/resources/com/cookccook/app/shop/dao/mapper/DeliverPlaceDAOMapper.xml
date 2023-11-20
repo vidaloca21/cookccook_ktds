@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cookccook.app.shop.dao.DeliverPlaceDAO">
+
+	<select id="getAlldeliverPlaceByMemberId"
+			parameterType="string"
+			resultType="com.cookccook.app.shop.vo.DeliverPlaceVO">
+			SELECT DELIVER_PLACE_ID
+				 , MEMBER_ID
+				 , DEL_ALIAS
+				 , DEL_ADDRESS
+				 , DEL_DETAIL_ADDRESS
+				 , ZIP_CODE
+				 , RECIPIENT
+				 , RECIPIENT_PHONE_NUMBER
+			  FROM DELIVER_PLACE
+			  WHERE MEMBER_ID = #{_parameter}
+	</select>
+	
+	<insert id="addNewDeliverPlace"
+			parameterType="com.cookccook.app.shop.vo.DeliverPlaceVO">
+			INSERT INTO DELIVER_PLACE
+				 ( DELIVER_PLACE_ID
+				 , MEMBER_ID
+				 , DEL_ALIAS
+				 , DEL_ADDRESS
+				 , DEL_DETAIL_ADDRESS
+				 , ZIP_CODE
+				 , RECIPIENT
+				 , RECIPIENT_PHONE_NUMBER) 
+			VALUES 
+				 ( ('DP' || LPAD(SEQ_DELIVER_PLACE_PK.NEXTVAL, 6, '0') )
+				 , #{memberId}
+				 , #{delAlias}
+				 , #{delAddress}
+				 , #{delDetailAddress}
+				 , #{zipCode}
+				 , #{recipient}
+				 , #{recipientPhoneNumber})
+	</insert>
+	
+	<update id="updateOneDeliverPlace"
+			parameterType="com.cookccook.app.shop.vo.DeliverPlaceVO">
+			UPDATE DELIVER_PLACE
+			   SET 
+			     ( DEL_ALIAS = #{delAlias}
+				 , DEL_ADDRESS = #{delAddress}
+				 , DEL_DETAIL_ADDRESS = #{delDetailAddress}
+				 , ZIP_CODE = #{zipCode}
+				 , RECIPIENT = #{recipient}
+				 , RECIPIENT_PHONE_NUMBER = #{recipientPhoneNumber})
+			 WHERE DELIVER_PLACE_ID = #{deliverPlaceId}
+	</update>
+	
+	<delete id="deleteOneDeliverPlace"
+			parameterType="string">
+			DELETE
+			  FROM DELIVER_PLACE
+			 WHERE DELIVER_PLACE_ID = #{_parameter}
+	</delete>
+	
+</mapper>

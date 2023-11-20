@@ -1,0 +1,58 @@
+.saleState {
+    background-color: #FFF1E0;
+    padding: 10px 15px;
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+p, label {
+    padding-right: 10px;
+}
+
+.search {
+    background-color: #FFF1E0;
+    height: 120px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    align-items: center;
+    justify-items: stretch;
+    padding: 10px 15px;
+}
+
+.search_btn {
+    grid-column: 2 / 3;
+    text-align: right;
+}
+
+.container {
+    overflow: hidden;
+    width: 100%;
+    height: 1200px;
+}
+
+table {
+    width: 100%;
+    border-top: 1px solid #d3d3d3;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+th {
+    background-color: rgba(251,143,103,0.8);
+    border-bottom: 1px solid #C0C0C0;
+    padding: 10px;
+}
+
+td {
+    border-bottom: 1px solid #d3d3d3;
+    padding: 10px;
+    font-weight: normal;
+}
+
+#piechart, #barchart {
+    width: 100%;
+    height: 700px;
+    display: inline-block;
+}

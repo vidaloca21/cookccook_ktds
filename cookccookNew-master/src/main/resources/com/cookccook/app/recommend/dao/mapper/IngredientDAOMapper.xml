@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cookccook.app.recommend.dao">
+
+	<select id="getAllIngredientList"
+			resultType="com.cookccook.app.recommend.vo.IngredientVO">
+		SELECT INGREDIENT_ID
+			 , INGREDIENT_NAME	
+			 , EXPIRE_DATE
+			 , ING_CLASS
+		  FROM INGREDIENT
+	</select>
+	
+	<select id="getAllIngredientName"
+			resultType="string">
+		SELECT INGREDIENT_NAME
+		  FROM INGREDIENT
+	</select>
+
+	<select id="getIngredientIdByName"
+			parameterType="string"
+			resultType="string">
+		SELECT INGREDIENT_ID
+		  FROM INGREDIENT
+		 WHERE INGREDIENT_NAME = #{_parameter}
+	</select>
+
+	<insert id="articeIngredientParser"
+			parameterType="com.cookccook.app.recommend.vo.ArtIngVO">
+		INSERT INTO ART_ING
+			 ( ART_ING_ID
+			 , ARTICLE_ID
+			 , INGREDIENT_ID)
+		VALUES 
+			 ( 'AIG' || LPAD(SEQ_ART_ING_PK.NEXTVAL, 6, '0')
+			 , #{articleId}
+			 , #{ingredientId}) 
+	</insert>
+
+
+</mapper>

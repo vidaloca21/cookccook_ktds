@@ -1,0 +1,330 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.cookccook.app.question.dao.QuestionDAO">
+	
+	<resultMap type="com.cookccook.app.question.vo.QuestionVO"
+			   id="questionVOMap"
+			   autoMapping="true">
+		<id column="QUESTION_ID" property="questionId" />
+		<association property="memberVO"
+					 javaType="com.cookccook.app.member.vo.MemberVO">
+			<id column="MEMBER_ID" property="memberId" />
+			<result column="MEM_NICKNAME" property="memNickname" />
+		</association>
+		<association property="productVO"
+					 javaType="com.cookccook.app.shop.vo.ProductVO" autoMapping="true">
+			<id column="PRODUCT_ID" property="productId" />
+			<result column="PRD_NAME" property="prdName" />
+		</association>
+	</resultMap>
+	
+	<resultMap type="com.cookccook.app.question.vo.QuestionVO"
+			   id="uppperQuestionVOMap">
+		<id column="U_QUESTION_ID" property="questionId" />
+		<result column="U_QUESTION_TYPE" property="questionType"/>
+		<result column="U_MEMBER_ID" property="memberId"/>
+		<result column="U_PRODUCT_ID" property="productId"/>
+		<result column="U_UPPER_QUESTION_ID" property="upperQuestionId"/>
+		<result column="U_QUE_CATEGORY" property="queCategory"/>
+		<result column="U_QUE_TITLE" property="queTitle"/>
+		<result column="U_QUE_CONTENT" property="queContent"/>
+		<result column="U_QUE_POST_DATE" property="quePostDate"/>
+		<result column="U_QUE_EDIT_DATE" property="queEditDate"/>
+		<result column="U_QUE_HIDDEN_DATE" property="queHiddenDate"/>
+		<association property="lowerQuestionVO"
+					 javaType="com.cookccook.app.question.vo.QuestionVO">
+			<id column="QUESTION_ID" property="questionId" />
+			<result column="QUESTION_TYPE" property="questionType"/>
+			<result column="MEMBER_ID" property="memberId"/>
+			<result column="PRODUCT_ID" property="productId"/>
+			<result column="UPPER_QUESTION_ID" property="upperQuestionId"/>
+			<result column="QUE_CATEGORY" property="queCategory"/>
+			<result column="QUE_TITLE" property="queTitle"/>
+			<result column="QUE_CONTENT" property="queContent"/>
+			<result column="QUE_POST_DATE" property="quePostDate"/>
+			<result column="QUE_EDIT_DATE" property="queEditDate"/>
+			<result column="QUE_HIDDEN_DATE" property="queHiddenDate"/>
+		</association>
+		<association property="memberVO"
+					 javaType="com.cookccook.app.member.vo.MemberVO">
+			<id column="MEMBER_ID" property="memberId" />
+			<result column="MEM_NICKNAME" property="memNickname" />
+		</association>
+		<association property="productVO"
+					 javaType="com.cookccook.app.shop.vo.ProductVO">
+			<id column="PRODUCT_ID" property="productId" />
+			<result column="PRD_NAME" property="prdName" />
+		</association>
+	</resultMap>
+	
+	<select id="getQuestionAllCount" 
+	 		 resultType="int">
+       	SELECT COUNT(1) 
+       	  FROM QUESTION
+    </select>
+
+    <select id="getAllQuestion" 
+    		resultMap="questionVOMap">
+        SELECT Q.QUESTION_ID
+             , Q.QUESTION_TYPE
+             , Q.MEMBER_ID
+             , Q.PRODUCT_ID
+             , Q.UPPER_QUESTION_ID
+             , Q.QUE_CATEGORY
+             , Q.QUE_TITLE
+             , Q.QUE_CONTENT
+             , TO_CHAR(Q.QUE_POST_DATE, 'YYYY-MM-DD hh24:mi:ss') QUE_POST_DATE
+             , TO_CHAR(Q.QUE_EDIT_DATE, 'YYYY-MM-DD hh24:mi:ss') QUE_EDIT_DATE
+             , TO_CHAR(Q.QUE_HIDDEN_DATE, 'YYYY-MM-DD hh24:mi:ss') QUE_HIDDEN_DATE
+             , M.MEM_NICKNAME MEM_NICKNAME
+          FROM QUESTION Q
+          LEFT JOIN MEMBER M
+            ON M.MEMBER_ID = Q.MEMBER_ID
+         WHERE QUE_HIDDEN_DATE IS NULL
+         ORDER BY QUESTION_TYPE, QUE_POST_DATE DESC
+    </select>
+    <select id="getSubQuestion" 
+    		resultMap="questionVOMap">
+        SELECT Q.QUESTION_ID
+             , Q.QUESTION_TYPE
+             , Q.MEMBER_ID
+             , Q.PRODUCT_ID
+             , Q.UPPER_QUESTION_ID
+             , Q.QUE_CATEGORY
+             , Q.QUE_TITLE
+             , Q.QUE_CONTENT
+             , TO_CHAR(Q.QUE_POST_DATE, 'YYYY-MM-DD hh24:mi:ss') QUE_POST_DATE
+             , TO_CHAR(Q.QUE_EDIT_DATE, 'YYYY-MM-DD hh24:mi:ss') QUE_EDIT_DATE
+             , TO_CHAR(Q.QUE_HIDDEN_DATE, 'YYYY-MM-DD hh24:mi:ss') QUE_HIDDEN_DATE
+             , M.MEM_NICKNAME MEM_NICKNAME
+          FROM QUESTION Q
+          LEFT JOIN MEMBER M
+            ON M.MEMBER_ID = Q.MEMBER_ID
+         WHERE 1=1
+           AND QUE_HIDDEN_DATE IS NULL
+           AND Q.PRODUCT_ID IS NULL
+         ORDER BY QUESTION_TYPE, QUE_POST_DATE DESC
+    </select>
+
+    <select id="getQuestionByProductId"
+    		parameterType="string"
+    		resultMap="questionVOMap">
+        SELECT Q.QUESTION_ID
+             , Q.QUESTION_TYPE
+             , Q.MEMBER_ID
+             , Q.PRODUCT_ID
+             , Q.UPPER_QUESTION_ID
+             , Q.QUE_CATEGORY
+             , Q.QUE_TITLE
+             , Q.QUE_CONTENT
+             , TO_CHAR(Q.QUE_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') QUE_POST_DATE
+             , TO_CHAR(Q.QUE_EDIT_DATE, 'YYYY-MM-DD') QUE_EDIT_DATE
+             , TO_CHAR(Q.QUE_HIDDEN_DATE, 'YYYY-MM-DD') QUE_HIDDEN_DATE
+             , M.MEM_NICKNAME MEM_NICKNAME
+          FROM QUESTION Q
+          LEFT JOIN MEMBER M
+            ON M.MEMBER_ID = Q.MEMBER_ID
+         WHERE PRODUCT_ID = #{_parameter}
+           AND QUE_HIDDEN_DATE IS NULL
+         ORDER BY QUE_POST_DATE DESC
+    </select>
+    
+    
+    <select id="getOneQuestionVO" 
+    		parameterType="string"
+    		resultType="com.cookccook.app.question.vo.QuestionVO">
+        SELECT QUESTION_ID
+             , QUESTION_TYPE
+             , MEMBER_ID
+             , PRODUCT_ID
+             , UPPER_QUESTION_ID
+             , QUE_CATEGORY
+             , QUE_TITLE
+             , QUE_CONTENT
+             , TO_CHAR(QUE_POST_DATE, 'YYYY-MM-DD') QUE_POST_DATE
+             , TO_CHAR(QUE_EDIT_DATE, 'YYYY-MM-DD') QUE_EDIT_DATE
+             , TO_CHAR(QUE_HIDDEN_DATE, 'YYYY-MM-DD') QUE_HIDDEN_DATE
+          FROM QUESTION
+          WHERE QUESTION_ID = #{_parameter}
+    </select>
+    
+    <insert id="createNewQuestion" 
+    		parameterType="com.cookccook.app.question.vo.QuestionVO">
+	    INSERT INTO QUESTION (
+	           QUESTION_ID
+	         , QUESTION_TYPE
+	         , MEMBER_ID
+	         , PRODUCT_ID
+	         , UPPER_QUESTION_ID
+	         , QUE_CATEGORY
+	         , QUE_TITLE
+	         , QUE_CONTENT
+	         , QUE_POST_DATE
+	         , QUE_EDIT_DATE
+	         , QUE_HIDDEN_DATE )
+	    VALUES (
+	    	   ( 'QUE' || LPAD(SEQ_QUESTION_PK.NEXTVAL, 6, '0') )
+	          <if test='productId == null and upperQuestionId == ""'>, 1</if>
+	          <if test='productId != null and upperQuestionId == ""'>, 2</if>
+	          <if test='upperQuestionId != ""'>, 9</if>
+	         , #{memberId}
+	         , #{productId}
+	         , #{upperQuestionId}
+	         , #{queCategory}
+	         , #{queTitle}
+	         , #{queContent}
+	         , SYSDATE
+	         , NULL
+	         , NULL )
+	</insert>
+
+    <update id="updateQuestion" 
+    		parameterType="com.cookccook.app.question.vo.QuestionVO">
+        UPDATE QUESTION
+           SET MEMBER_ID = #{memberId}
+	         , QUE_TITLE = #{queTitle}
+	         , QUE_CONTENT = #{queContent}
+	         , QUE_EDIT_DATE = SYSDATE
+         WHERE QUESTION_ID = #{questionId}
+    </update>
+    
+    <delete id="deleteQuestion"
+    		parameterType="string">
+    		DELETE
+    		  FROM QUESTION
+    		 WHERE QUESTION_ID = #{_parameter}
+    </delete>
+    
+    <select id="getQuestionByMemberId" parameterType="string" resultMap="uppperQuestionVOMap">
+    	SELECT Q.QUESTION_ID
+             , Q.QUESTION_TYPE
+             , Q.MEMBER_ID
+             , Q.PRODUCT_ID
+             , Q.UPPER_QUESTION_ID
+             , Q.QUE_CATEGORY
+             , Q.QUE_TITLE
+             , Q.QUE_CONTENT
+             , TO_CHAR(Q.QUE_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') QUE_POST_DATE
+             , TO_CHAR(Q.QUE_EDIT_DATE, 'YYYY-MM-DD') QUE_EDIT_DATE
+             , TO_CHAR(Q.QUE_HIDDEN_DATE, 'YYYY-MM-DD') QUE_HIDDEN_DATE
+             , M.MEM_NICKNAME
+             , P.PRD_NAME
+			 , UQ.QUESTION_ID AS U_QUESTION_ID
+             , UQ.QUESTION_TYPE AS U_QUESTION_TYPE
+             , UQ.MEMBER_ID AS U_MEMBER_ID
+             , UQ.PRODUCT_ID AS U_PRODUCT_ID
+             , UQ.UPPER_QUESTION_ID AS U_UPPER_QUESTION_ID
+             , UQ.QUE_CATEGORY AS U_QUE_CATEGORY
+             , UQ.QUE_TITLE AS U_QUE_TITLE
+             , UQ.QUE_CONTENT AS U_QUE_CONTENT
+             , TO_CHAR(UQ.QUE_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') AS U_QUE_POST_DATE
+             , TO_CHAR(UQ.QUE_EDIT_DATE, 'YYYY-MM-DD') AS U_QUE_EDIT_DATE
+             , TO_CHAR(UQ.QUE_HIDDEN_DATE, 'YYYY-MM-DD') AS U_QUE_HIDDEN_DATE
+          FROM QUESTION UQ
+          LEFT JOIN QUESTION Q
+    		ON Q.UPPER_QUESTION_ID = UQ.QUESTION_ID
+         INNER JOIN "MEMBER" M
+            ON M.MEMBER_ID = UQ.MEMBER_ID
+         INNER JOIN PRODUCT P
+            ON P.PRODUCT_ID = UQ.PRODUCT_ID 
+         WHERE P.MEMBER_ID = #{_parameter}
+           AND UQ.MEMBER_ID != #{_parameter}
+           AND UQ.QUE_HIDDEN_DATE IS NULL
+         ORDER BY UQ.QUE_POST_DATE DESC
+    </select>
+    
+    <select id="getQuestionBySearch" parameterType="com.cookccook.app.shop.vo.ProductSearchVO" resultMap="uppperQuestionVOMap">
+    	SELECT Q.QUESTION_ID
+             , Q.QUESTION_TYPE
+             , Q.MEMBER_ID
+             , Q.PRODUCT_ID
+             , Q.UPPER_QUESTION_ID
+             , Q.QUE_CATEGORY
+             , Q.QUE_TITLE
+             , Q.QUE_CONTENT
+             , TO_CHAR(Q.QUE_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') QUE_POST_DATE
+             , TO_CHAR(Q.QUE_EDIT_DATE, 'YYYY-MM-DD') QUE_EDIT_DATE
+             , TO_CHAR(Q.QUE_HIDDEN_DATE, 'YYYY-MM-DD') QUE_HIDDEN_DATE
+             , M.MEM_NICKNAME
+             , P.PRD_NAME 
+			 , UQ.QUESTION_ID AS U_QUESTION_ID
+             , UQ.QUESTION_TYPE AS U_QUESTION_TYPE
+             , UQ.MEMBER_ID AS U_MEMBER_ID
+             , UQ.PRODUCT_ID AS U_PRODUCT_ID
+             , UQ.UPPER_QUESTION_ID AS U_UPPER_QUESTION_ID
+             , UQ.QUE_CATEGORY AS U_QUE_CATEGORY
+             , UQ.QUE_TITLE AS U_QUE_TITLE
+             , UQ.QUE_CONTENT AS U_QUE_CONTENT
+             , TO_CHAR(UQ.QUE_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') AS U_QUE_POST_DATE
+             , TO_CHAR(UQ.QUE_EDIT_DATE, 'YYYY-MM-DD') AS U_QUE_EDIT_DATE
+             , TO_CHAR(UQ.QUE_HIDDEN_DATE, 'YYYY-MM-DD') AS U_QUE_HIDDEN_DATE
+          FROM QUESTION UQ
+          LEFT JOIN QUESTION Q
+    		ON Q.UPPER_QUESTION_ID = UQ.QUESTION_ID
+         INNER JOIN "MEMBER" M
+            ON M.MEMBER_ID = UQ.MEMBER_ID
+         INNER JOIN PRODUCT P
+            ON P.PRODUCT_ID = UQ.PRODUCT_ID 
+         WHERE P.MEMBER_ID = #{memberId}
+           AND UQ.MEMBER_ID != #{memberId}
+           AND UQ.QUE_HIDDEN_DATE IS NULL
+           <if test='reState != null and reState != ""'>
+           	<choose>
+           		<when test='reState == 1'>AND Q.UPPER_QUESTION_ID IS NULL</when>
+           		<otherwise>AND Q.UPPER_QUESTION_ID IS NOT NULL</otherwise>
+           	</choose>
+           </if>
+		   <if test='productId != null and productId != ""'>AND P.PRODUCT_ID = #{productId}</if>
+		   <if test='prdName != null and prdName != ""'>AND P.PRD_NAME LIKE '%' || #{prdName} || '%'</if>
+		   <if test='startRegistDate != null and startRegistDate != ""'>AND <![CDATA[UQ.QUE_POST_DATE >= TO_DATE(#{startRegistDate}, 'YYYY-MM-DD')]]></if>
+		   <if test='endRegistDate != null and endRegistDate != ""'>AND <![CDATA[UQ.QUE_POST_DATE <= TO_DATE(#{endRegistDate}, 'YYYY-MM-DD') +1]]></if> 
+         ORDER BY UQ.QUE_POST_DATE DESC
+    </select>
+    
+    <select id="getAllCntBySeller" parameterType="string" resultType="_int">
+    	SELECT COUNT(1) 
+		  FROM QUESTION UQ
+		          LEFT JOIN QUESTION Q
+		    		ON Q.UPPER_QUESTION_ID = UQ.QUESTION_ID
+		         INNER JOIN "MEMBER" M
+		            ON M.MEMBER_ID = UQ.MEMBER_ID
+		         INNER JOIN PRODUCT P
+		            ON P.PRODUCT_ID = UQ.PRODUCT_ID 
+		         WHERE P.MEMBER_ID = #{_parameter}
+		           AND UQ.QUE_HIDDEN_DATE IS NULL
+		           AND UQ.MEMBER_ID != #{_parameter}
+    </select>
+    
+    <select id="getNotReQueCntBySeller" parameterType="string" resultType="_int">
+    	SELECT COUNT(1) 
+		  FROM QUESTION UQ
+		          LEFT JOIN QUESTION Q
+		    		ON Q.UPPER_QUESTION_ID = UQ.QUESTION_ID
+		         INNER JOIN "MEMBER" M
+		            ON M.MEMBER_ID = UQ.MEMBER_ID
+		         INNER JOIN PRODUCT P
+		            ON P.PRODUCT_ID = UQ.PRODUCT_ID 
+		         WHERE P.MEMBER_ID = #{_parameter}
+		           AND UQ.QUE_HIDDEN_DATE IS NULL
+		           AND UQ.MEMBER_ID != #{_parameter}
+		           AND Q.UPPER_QUESTION_ID IS NULL
+    </select>
+    	
+    <select id="getReQueCntBySeller" parameterType="string" resultType="_int">
+    	SELECT COUNT(1) 
+		  FROM QUESTION UQ
+		          LEFT JOIN QUESTION Q
+		    		ON Q.UPPER_QUESTION_ID = UQ.QUESTION_ID
+		         INNER JOIN "MEMBER" M
+		            ON M.MEMBER_ID = UQ.MEMBER_ID
+		         INNER JOIN PRODUCT P
+		            ON P.PRODUCT_ID = UQ.PRODUCT_ID 
+		         WHERE P.MEMBER_ID = #{_parameter}
+		           AND UQ.QUE_HIDDEN_DATE IS NULL
+		           AND UQ.MEMBER_ID != #{_parameter}
+		           AND Q.UPPER_QUESTION_ID IS NOT NULL
+    </select>
+
+</mapper>

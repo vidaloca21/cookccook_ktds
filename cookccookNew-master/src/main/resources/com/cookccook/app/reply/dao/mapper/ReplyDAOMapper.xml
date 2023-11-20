@@ -1,0 +1,97 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cookccook.app.reply.dao.ReplyDAO">
+
+   <resultMap type="com.cookccook.app.reply.vo.ReplyVO" 
+            id="replyVOMap"
+            autoMapping="true">
+      <id column="REPLY_ID" property="replyId"/>
+      <association property="memberVO"
+                javaType="com.cookccook.app.member.vo.MemberVO"
+                autoMapping="true">
+      <id column="MEMBER_ID" property="memberId"/>
+      <id column="MEM_NAME" property="memName"/>
+      <id column="MEM_NICKNAME" property="memNickname"/>
+      </association>
+   </resultMap>
+   
+   <select id="getAllReplies"
+         parameterType="string"
+         resultMap="replyVOMap">
+      SELECT R.REPLY_ID
+           , R.MEMBER_ID
+           , R.ARTICLE_ID
+           , R.UPPER_REPLY_ID
+           , REPLY_CONTENT
+           , TO_CHAR(R.REPLY_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') REPLY_POST_DATE
+           , TO_CHAR(R.REPLY_EDIT_DATE, 'YYYY-MM-DD HH24:mi:ss') REPLY_EDIT_DATE
+           , TO_CHAR(R.REPLY_HIDDEN_DATE, 'YYYY-MM-DD HH24:mi:ss') REPLY_HIDDEN_DATE
+           , M.MEM_NAME
+           , M.MEM_NICKNAME
+        FROM REPLY R
+       INNER JOIN MEMBER M
+          ON R.MEMBER_ID = M.MEMBER_ID 
+        WHERE R.REPLY_HIDDEN_DATE IS NULL
+       START WITH R.UPPER_REPLY_ID IS NULL
+         AND R.ARTICLE_ID = #{_parameter}
+      CONNECT BY PRIOR R.REPLY_ID = R.UPPER_REPLY_ID
+   </select>
+   
+   <select id="getOneReply"
+         parameterType="string"
+         resultMap="replyVOMap">
+      SELECT R.REPLY_ID
+           , R.MEMBER_ID
+           , R.ARTICLE_ID
+           , R.UPPER_REPLY_ID
+           , R.REPLY_CONTENT
+           , TO_CHAR(R.REPLY_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') REPLY_POST_DATE
+           , TO_CHAR(R.REPLY_EDIT_DATE, 'YYYY-MM-DD HH24:mi:ss') REPLY_EDIT_DATE
+           , TO_CHAR(R.REPLY_HIDDEN_DATE, 'YYYY-MM-DD HH24:mi:ss') REPLY_HIDDEN_DATE
+           , M.MEM_NAME
+           , M.MEM_NICKNAME
+        FROM REPLY R
+       INNER JOIN MEMBER M
+          ON R.MEMBER_ID = M.MEMBER_ID 
+       WHERE R.REPLY_ID = #{_parameter}
+   </select>
+   
+   <insert id="createNewReply"
+           parameterType="com.cookccook.app.reply.vo.ReplyVO">
+        INSERT INTO REPLY
+           (REPLY_ID
+          , MEMBER_ID
+          , ARTICLE_ID
+          , UPPER_REPLY_ID
+          , REPLY_CONTENT
+          , REPLY_POST_DATE
+          , REPLY_EDIT_DATE
+          , REPLY_HIDDEN_DATE)
+      VALUES
+          (( 'RPL' || LPAD(SEQ_REPLY_PK.NEXTVAL, 6, '0') )
+          , #{memberId}
+          , #{articleId}
+          , #{upperReplyId}
+          , #{replyContent}
+          , SYSDATE
+          , SYSDATE
+          , NULL)
+   </insert>   
+   
+   <update id="updateOneReply"
+         parameterType="com.cookccook.app.reply.vo.ReplyVO">
+      UPDATE REPLY 
+         SET REPLY_CONTENT = #{replyContent}
+           , REPLY_EDIT_DATE = SYSDATE 
+       WHERE REPLY_ID = #{replyId}
+   </update>
+   
+   <update id="deleteOneReply"
+         parameterType="string">
+      UPDATE REPLY
+         SET REPLY_HIDDEN_DATE = SYSDATE
+       WHERE REPLY_ID = #{_parameter}
+   </update>
+   
+</mapper>

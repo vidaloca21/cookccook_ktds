@@ -1,0 +1,175 @@
+@font-face {
+    font-family: 'SUIT-Regular';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+/*디폴트 컴포넌트*/
+.btn_fill {
+  display: flex;
+  position: relative;
+  width: 150px;
+  height: 50px;
+  font-size: 18px; 
+  font-weight: bold;
+  background-color: #FB8F67;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.btn_empty {
+  display: flex;
+  position: relative;
+  width: 150px;
+  height: 50px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #fff;
+  border: 1px solid #FB8F67;
+  color: #FB8F67;
+  border-radius: 10px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+   padding: 5px;
+}
+
+.btn_navigate {
+	padding: 5px;
+}
+
+
+* {
+  color: #2B1512;
+  text-decoration: none;
+  font-family: 'SUIT-Regular';
+  font-size: 16px;
+}
+a {
+	text-decoration: none;
+}
+
+.font_title {
+  font-size: 28px;
+  font-weight: bold;
+  
+}
+.font_subtitle {
+  font-size: 20px;
+
+}
+
+.font_content {
+  font-size: 16px;
+
+}
+
+.font_mini {
+  font-size: 15px;
+  color: #555;
+
+}
+
+.font_emphasis {
+  font-size: 18px;
+  font-weight: bold;
+  color: #FF6347;
+
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 25% 50% 25%;
+  height: 130px;
+  min-width: 1484px;
+  align-content: space-between;
+}
+
+.icon_bar {
+  grid-column: 1/2;
+  text-align: center;
+  padding: 10px;
+}
+
+#icon {
+	width: 70px;
+	height: 70px;
+}
+
+.mem_bar {
+	position: fixed;
+	top: 10px;
+	right: 30px;
+	display: inline-block;
+}
+
+
+#login, #signup, #logout, #myinfo, #managementPg {
+	display: inline-block;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 15% 70% 15%;
+  grid-auto-rows: minmax(100%, auto);
+  height: auto;
+  min-width: 1484px;
+  padding-bottom: 20px;
+  align-content: start;
+  min-height: 100rem;
+
+}
+
+
+.menu {
+  display: flex;
+  height: 50px;
+  font-size: 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu_highlight {
+  display: flex;
+  height: 50px;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #FF6347;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+ } 
+ 
+/* .container 는 각자가 작업한 내용 */
+
+.container {
+ padding-left: 30px;
+}
+
+/* FOOTER */
+
+.footer {
+  border-top: 1px solid #FFF1E0;
+  font-size: 12px;
+  width: 100%;
+  min-width: 1484px;
+  text-align: center;
+  padding: 20px;
+}
+
+.footer > ul {
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+}
+
+.footer > ul > li {
+	display: flex;
+	flex-direction: column;
+	
+}

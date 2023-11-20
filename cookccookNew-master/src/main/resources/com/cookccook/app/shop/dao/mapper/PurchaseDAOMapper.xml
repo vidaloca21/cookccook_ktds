@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cookccook.app.shop.dao.PurchaseDAO">
+	
+	<insert id="createNewPurchase"
+			parameterType="com.cookccook.app.shop.vo.PurchaseVO">
+		INSERT INTO PURCHASE 
+			 ( PURCHASE_ID
+			 , MEMBER_ID
+			 , DELIVER_PLACE_ID
+			 , DELIVER_MEMO
+			 , PURCHASE_DATE
+			 , PAY_METHOD)
+		VALUES 
+			 ( #{purchaseId}
+			 , #{memberId}
+			 , #{deliverPlaceId}
+			 , #{deliverMemo}
+			 , SYSDATE
+			 , #{payMethod})
+	</insert>
+	
+	<insert id="createNewPurchaseProduct"
+		 	parameterType="com.cookccook.app.shop.vo.PurchaseProductVO">
+		INSERT INTO PURCHASE_PRODUCT
+			 ( PURCHASE_PRODUCT_ID
+			 , PURCHASE_ID
+			 , CART_ID
+			 , CHOICE_ID
+			 , DELIVER_FEE
+			 , QUANTITY
+			 , PUR_PRD_PRICE
+			 , PUR_STATE
+			 , PUR_CANCEL_STATUS
+			 , WAYBILL
+			 , DELIVER_DATE)
+		VALUES
+			 ( 'PPD' || LPAD(SEQ_PURCHASE_PRODUCT_PK.NEXTVAL, 6, '0')
+			 , #{purchaseId}
+			 , #{cartId}
+			 , #{choiceId}
+			 , #{deliverFee}
+			 , #{quantity}
+			 , #{purPrdPrice}
+			 , 1
+			 , 'FALSE'
+			 , NULL
+			 , NULL)
+	</insert>
+	
+	<insert id="createNewDeliverPlace"
+			parameterType="com.cookccook.app.shop.vo.DeliverPlaceVO">
+		INSERT INTO DELIVER_PLACE 
+			 ( DELIVER_PLACE_ID
+			 , MEMBER_ID
+			 , DEL_ALIAS
+			 , DEL_ADDRESS
+			 , DEL_DETAIL_ADDRESS
+			 , ZIP_CODE
+			 , RECIPIENT
+			 , RECIPIENT_PHONE_NUMBER)
+		VALUES
+			 ( 'DP' || LPAD(SEQ_DELIVER_PLACE_PK.NEXTVAL, 6, '0')
+			 , #{memberId}
+			 , #{delAlias}
+			 , #{delAddress}
+			 , #{delDetailAddress}
+			 , #{zipCode}
+			 , #{recipient}
+			 , #{recipientPhoneNumber})
+	</insert>
+	
+	<update id= "cancelPurchaseProduct"
+			parameterType="string">
+		UPDATE PURCHASE
+		   SET PUR_CANCEL_STATUS = 1
+		 WHERE PURCHASE_ID = #{_parameter}		
+	</update>
+	
+	<select id="getOneChoiceByChoiceId"
+			parameterType="string"
+			resultType="com.cookccook.app.shop.vo.ChoiceVO">
+		SELECT CHOICE_ID
+			 , CHO_NAME
+			 , CHO_PRICE
+			 , PRODUCT_ID
+		  FROM CHOICE
+		 WHERE CHOICE_ID = #{_parameter}		
+	</select>
+	
+	<select id="getCartPk"
+			resultType="string">
+		SELECT ( 'CRT' || LPAD(SEQ_CART_PK.NEXTVAL, 6, '0') ) CART_ID
+		  FROM DUAL
+	</select>
+	
+	<select id="getPurchasePk"
+			resultType="string">
+		SELECT ( 'PUR' || LPAD(SEQ_PURCHASE_PK.NEXTVAL, 6, '0') ) PURCHASE_ID
+		  FROM DUAL	
+	</select>
+	
+</mapper>

@@ -1,0 +1,63 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.cookccook.util.dao.AttachDAO">
+
+	<select id="getAllAttachList"
+			resultType="com.cookccook.util.vo.AttachVO">
+		SELECT ATTACH_ID
+			 , ORIGINAL_ID
+			 , FILE_NAME
+			 , ORIGIN_FILE_NAME
+			 , FILEPATH
+		  FROM ATTACH
+	</select>
+	
+	<insert id="createNewAttach"
+			parameterType="com.cookccook.util.vo.AttachVO">
+		INSERT INTO ATTACH
+			 ( ATTACH_ID
+			 , ORIGINAL_ID
+			 , FILE_NAME
+			 , ORIGIN_FILE_NAME
+			 , FILEPATH)
+		VALUES
+			 ( ('ATT' || LPAD(SEQ_ATTACH_PK.NEXTVAL, 6, 0))
+			 , #{originalId}
+			 , #{fileName}
+			 , #{originFileName}
+			 , #{filepath})
+	</insert>	
+	
+	<select id="getAllImageUrl"
+			resultType="com.cookccook.app.article.vo.RecipeVO">
+		SELECT ARTICLE_ID
+			 , ATT_IMG_SMALL
+		  FROM RECIPE
+	</select>
+
+	<select id="getAllPostImageUrl"
+			resultType="com.cookccook.app.article.vo.RecipeVO">
+		SELECT ARTICLE_ID
+			 , ATT_IMG_SMALL
+		  FROM RECIPE
+		 WHERE ATT_IMG_SMALL LIKE 'https:%'
+	</select>
+	
+	<update id="addFilePathToRecipeVO"
+			parameterType="com.cookccook.app.article.vo.RecipeVO">
+		UPDATE RECIPE
+		   SET TITLE_IMG_PATH = #{titleImgPath}
+		 WHERE ARTICLE_ID = #{articleId}
+	</update>
+	
+	<select id="getOneAttachImg"
+			parameterType="string"
+			resultType="string">
+		SELECT ORIGIN_FILE_NAME
+		  FROM ATTACH
+		 WHERE ORIGINAL_ID = #{_parameter}
+	</select>
+	
+</mapper>

@@ -1,0 +1,320 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.cookccook.app.review.dao">
+
+	<resultMap type="com.cookccook.app.review.vo.ReviewVO"
+			   id="reviewVOMap"
+			   autoMapping="true">
+		<id column="REVIEW_ID" property="reviewId" />
+		<association property="memberVO"
+					 javaType="com.cookccook.app.member.vo.MemberVO">
+			<id column="MEMBER_ID" property="memberId" />
+			<result column="MEM_NICKNAME" property="memNickname" />
+		</association>
+		<association property="productVO"
+					 javaType="com.cookccook.app.shop.vo.ProductVO">
+			<id column="PRODUCT_ID" property="productId" />
+			<result column="PRD_NAME" property="prdName" />
+		</association>
+	</resultMap>
+	
+	<resultMap type="com.cookccook.app.shop.vo.PurchaseProductVO"
+			   id="purchaseHistoryMap"
+			   autoMapping="true">
+		<association property="purchaseVO"
+					 javaType="com.cookccook.app.shop.vo.PurchaseVO">
+			<id column="PURCHASE_ID" property="purchaseId" />
+			<result column="PURCHASE_DATE" property="purchaseDate" />
+		</association>
+		<association property="choiceVO"
+					 javaType="com.cookccook.app.shop.vo.ChoiceVO">
+			<id column="CHOICE_ID" property="choiceId" />
+			<result column="PRODUCT_ID" property="productId" />
+		</association>
+	</resultMap>
+
+	<select id="getOneReview"
+			parameterType="string"
+			resultType="com.cookccook.app.review.vo.ReviewVO">
+		SELECT REVIEW_ID
+			 , REVIEW_TYPE
+			 , MEMBER_ID
+			 , PRODUCT_ID
+			 , REV_CONTENT
+			 , RATING
+			 , TO_CHAR(REV_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_POST_DATE
+			 , TO_CHAR(REV_EDIT_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_EDIT_DATE
+			 , TO_CHAR(REV_HIDDEN_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_HIDDEN_DATE
+		  FROM REVIEW
+		 WHERE REVIEW_ID = #{_parameter}	
+	</select>
+	
+	<select id="getAllReviewCount"
+			resultType="_int">
+		SELECT COUNT(1)
+		  FROM REVIEW
+	</select>
+
+	<select id="getAllReviews"
+			resultMap="reviewVOMap">
+		SELECT R.REVIEW_ID
+			 , R.REVIEW_TYPE
+			 , R.MEMBER_ID
+			 , R.PRODUCT_ID
+			 , R.REV_CONTENT
+			 , R.RATING
+			 , TO_CHAR(R.REV_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_POST_DATE
+			 , TO_CHAR(R.REV_EDIT_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_EDIT_DATE
+			 , TO_CHAR(R.REV_HIDDEN_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_HIDDEN_DATE
+			 , M.MEM_NICKNAME
+		  FROM REVIEW R
+		  JOIN MEMBER M
+		    ON M.MEMBER_ID = R.MEMBER_ID
+		 ORDER BY REV_POST_DATE DESC
+	</select>
+	
+	<select id="getReviewCountByProductId"
+			parameterType="string"
+			resultType="_int">
+		SELECT COUNT(1)
+		  FROM REVIEW
+		 WHERE PRODUCT_ID = #{_parameter}
+	</select>
+
+	<select id="getReviewByProductId"
+			parameterType="string"
+			resultMap="reviewVOMap">
+		SELECT R.REVIEW_ID
+			 , R.REVIEW_TYPE
+			 , R.MEMBER_ID
+			 , R.PRODUCT_ID
+			 , R.REV_CONTENT
+			 , R.RATING
+			 , TO_CHAR(R.REV_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_POST_DATE
+			 , TO_CHAR(R.REV_EDIT_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_EDIT_DATE
+			 , TO_CHAR(R.REV_HIDDEN_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_HIDDEN_DATE
+			 , M.MEM_NICKNAME
+		  FROM REVIEW R
+		  JOIN MEMBER M
+		    ON M.MEMBER_ID = R.MEMBER_ID
+		 WHERE REV_HIDDEN_DATE IS NULL
+		   AND R.PRODUCT_ID = #{_parameter}
+	     ORDER BY REV_POST_DATE DESC
+	</select>
+
+	<select id="getReviewOnSubscribe"
+			resultMap="reviewVOMap">
+		SELECT R.REVIEW_ID
+			 , R.REVIEW_TYPE
+			 , R.MEMBER_ID
+			 , R.PRODUCT_ID
+			 , R.REV_CONTENT
+			 , R.RATING
+			 , TO_CHAR(R.REV_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_POST_DATE
+			 , TO_CHAR(R.REV_EDIT_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_EDIT_DATE
+			 , TO_CHAR(R.REV_HIDDEN_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_HIDDEN_DATE
+			 , M.MEM_NICKNAME
+		  FROM REVIEW R
+		  JOIN MEMBER M
+		    ON M.MEMBER_ID = R.MEMBER_ID
+		 WHERE 1=1
+		   AND R.REV_HIDDEN_DATE IS NULL
+		   AND R.REVIEW_TYPE = 1
+	     ORDER BY REV_POST_DATE DESC
+	</select>
+	
+	<select id="searchReviewByKeyword"
+			parameterType="string"
+			resultType="com.cookccook.app.review.vo.ReviewVO">
+		SELECT REVIEW_ID
+			 , REVIEW_TYPE
+			 , MEMBER_ID
+			 , PRODUCT_ID
+			 , REV_CONTENT
+			 , RATING
+			 , TO_CHAR(REV_POST_DATE, 'YYYY-MM-DD') REV_POST_DATE
+			 , TO_CHAR(REV_EDIT_DATE, 'YYYY-MM-DD') REV_EDIT_DATE
+			 , TO_CHAR(REV_HIDDEN_DATE, 'YYYY-MM-DD') REV_HIDDEN_DATE
+		  FROM REVIEW
+		 WHERE REV_CONTENT LIKE '%'||#{_parameter}||'%' 
+	</select>
+	
+	<insert id="createNewReview"
+			parameterType="com.cookccook.app.review.vo.ReviewVO">
+		INSERT INTO REVIEW (
+			   REVIEW_ID
+			 , REVIEW_TYPE
+			 , MEMBER_ID
+			 , PRODUCT_ID
+			 , REV_CONTENT
+			 , RATING
+			 , REV_POST_DATE
+			 , REV_EDIT_DATE
+			 , REV_HIDDEN_DATE )
+		VALUES 
+		     ( ('REV'||LPAD(SEQ_CUISINE_PK.NEXTVAL, 6, '0'))
+			 , #{reviewType}
+			 , #{memberId}
+			 , #{productId}
+			 , #{revContent}
+			 , #{rating}
+			 , SYSDATE
+			 , NULL
+			 , NULL )
+	</insert>
+	
+	<update id="modifyOneReview"
+			parameterType="com.cookccook.app.review.vo.ReviewVO">
+		UPDATE REVIEW
+		   SET REV_CONTENT = #{revContent}
+			 , RATING = #{rating}
+			 , REV_EDIT_DATE = SYSDATE
+		 WHERE REVIEW_ID = #{reviewId}
+	</update>
+	
+	<update id="deleteOneReview"
+			parameterType="string">
+		UPDATE REVIEW
+		   SET REV_HIDDEN_DATE = SYSDATE
+		 WHERE REVIEW_ID = #{_parameter}
+	</update>
+	
+	<select id="getMemberPurchaseHistory"
+			parameterType="string"
+			resultMap="purchaseHistoryMap">
+			SELECT C.PRODUCT_ID
+			  FROM PURCHASE_PRODUCT PP 
+			  JOIN CHOICE C 
+			  	ON PP.CHOICE_ID = C.CHOICE_ID 
+			  JOIN PURCHASE PC 
+			  	ON PC.PURCHASE_ID = PP.PURCHASE_ID 
+			 WHERE 1=1
+			   AND PC.MEMBER_ID = #{_parameter}
+			   AND PC.PUR_CANCEL_STATUS IS NULL
+	</select>
+
+	<select id="getReviewByMemberId" parameterType="string" resultMap="reviewVOMap">
+		SELECT R.REVIEW_ID
+		     , R.MEMBER_ID
+		     , R.PRODUCT_ID
+		     , R.REV_CONTENT
+		     , R.RATING
+		     , R.REV_POST_DATE
+		     , R.REV_EDIT_DATE
+		     , R.REV_HIDDEN_DATE
+		     , P.PRD_NAME
+		     , M.MEM_NICKNAME 
+		  FROM REVIEW R
+		 INNER JOIN "MEMBER" M
+		 	ON M.MEMBER_ID = R.MEMBER_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND R.REV_HIDDEN_DATE IS NULL
+		 ORDER BY R.REV_POST_DATE DESC
+	</select>
+
+	 <select id="getReviewBySearch" parameterType="com.cookccook.app.shop.vo.ProductSearchVO" resultMap="reviewVOMap">
+	 	SELECT R.REVIEW_ID
+		     , R.MEMBER_ID
+		     , R.PRODUCT_ID
+		     , R.REV_CONTENT
+		     , R.RATING
+		     , TO_CHAR(R.REV_POST_DATE, 'YYYY-MM-DD HH24:mi:ss') REV_POST_DATE
+		     , TO_CHAR(R.REV_EDIT_DATE, 'YYYY-MM-DD') REV_EDIT_DATE
+		     , TO_CHAR(R.REV_HIDDEN_DATE, 'YYYY-MM-DD') REV_HIDDEN_DATE
+		     , P.PRD_NAME
+		     , M.MEM_NICKNAME 
+		  FROM REVIEW R
+		 INNER JOIN "MEMBER" M
+		 	ON M.MEMBER_ID = R.MEMBER_ID 
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{memberId}
+		   AND R.REV_HIDDEN_DATE IS NULL
+		   <if test='rating != null and rating != ""'>
+           	<choose>
+           		<when test='rating == 1'>AND R.RATING = 1</when>
+           		<when test='rating == 2'>AND R.RATING = 2</when>
+           		<when test='rating == 3'>AND R.RATING = 3</when>
+           		<when test='rating == 4'>AND R.RATING = 4</when>
+           		<otherwise>AND R.RATING = 5</otherwise>
+           	</choose>
+           </if>
+		   <if test='productId != null and productId != ""'>AND P.PRODUCT_ID = #{productId}</if>
+		   <if test='prdName != null and prdName != ""'>AND P.PRD_NAME LIKE '%' || #{prdName} || '%'</if>
+		   <if test='startRegistDate != null and startRegistDate != ""'>AND <![CDATA[R.REV_POST_DATE >= TO_DATE(#{startRegistDate}, 'YYYY-MM-DD')]]></if>
+		   <if test='endRegistDate != null and endRegistDate != ""'>AND <![CDATA[R.REV_POST_DATE <= TO_DATE(#{endRegistDate}, 'YYYY-MM-DD') +1]]></if> 
+		 ORDER BY R.REV_POST_DATE DESC
+	 </select>
+	 
+	 <select id="getRatingAvgBySeller" parameterType="string" resultType="_double">
+	 	SELECT ROUND(AVG(RATING), 1)
+		  FROM REVIEW R
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND R.REV_HIDDEN_DATE IS NULL
+	 </select>
+	 
+	 <select id="getRatingAllCntBySeller" parameterType="string" resultType="_int">
+	 	SELECT COUNT(1)
+		  FROM REVIEW R
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND R.REV_HIDDEN_DATE IS NULL
+	 </select>
+	 
+	 <select id="getOneCntBySeller" parameterType="string" resultType="_int">
+	 	SELECT COUNT(1)
+		  FROM REVIEW R
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND R.REV_HIDDEN_DATE IS NULL
+		   AND RATING = 1
+	 </select>
+	 
+	 <select id="getTwoCntBySeller" parameterType="string" resultType="_int">
+	 	SELECT COUNT(1)
+		  FROM REVIEW R
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND R.REV_HIDDEN_DATE IS NULL
+		   AND RATING = 2
+	 </select>
+	 
+	 <select id="getThreeCntBySeller" parameterType="string" resultType="_int">
+	 	SELECT COUNT(1)
+		  FROM REVIEW R
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND R.REV_HIDDEN_DATE IS NULL
+		   AND RATING = 3
+	 </select>
+	 
+	 <select id="getfourCntBySeller" parameterType="string" resultType="_int">
+	 	SELECT COUNT(1)
+		  FROM REVIEW R
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND R.REV_HIDDEN_DATE IS NULL
+		   AND RATING = 4
+	 </select>
+	 
+	 <select id="getfiveCntBySeller" parameterType="string" resultType="_int">
+	 	SELECT COUNT(1)
+		  FROM REVIEW R
+		 INNER JOIN PRODUCT P
+		    ON P.PRODUCT_ID = R.PRODUCT_ID 
+		 WHERE P.MEMBER_ID = #{_parameter}
+		   AND R.REV_HIDDEN_DATE IS NULL
+		   AND RATING = 5
+	 </select>
+</mapper>

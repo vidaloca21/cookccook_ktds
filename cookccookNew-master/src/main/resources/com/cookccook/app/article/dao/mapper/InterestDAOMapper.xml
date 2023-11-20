@@ -1,0 +1,47 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.cookccook.app.article.dao.InterestDAO">
+
+   <select id="getAllInterestIdList"
+         resultType="string">
+      SELECT ARTICLE_ID
+        FROM INTEREST
+   </select>
+   
+   <select id="getInterestIdList"
+         parameterType="string"
+         resultType="string">
+      SELECT ARTICLE_ID
+        FROM INTEREST
+       WHERE MEMBER_ID = #{_parameter}
+   </select>
+   
+   <insert id="addNewInterest"
+         parameterType="com.cookccook.app.article.vo.InterestVO">
+      INSERT INTO INTEREST
+          ( INTEREST_ID
+          , MEMBER_ID
+          , ARTICLE_ID)
+      VALUES
+          ( ( 'LKE' || LPAD(SEQ_INTEREST_PK.NEXTVAL, 6, '0') )
+          , #{memberId}
+          , #{articleId})
+   </insert>
+   
+   <delete id="deleteOneInterest"
+         parameterType="com.cookccook.app.article.vo.InterestVO">
+      DELETE
+        FROM INTEREST
+       WHERE ARTICLE_ID = #{articleId}
+         AND MEMBER_ID = #{memberId}
+   </delete>
+   
+   <select id="getAllRecipeInterestList"
+         	resultType="string">
+      SELECT ARTICLE_ID
+        FROM RECIPE
+   </select>
+
+</mapper>

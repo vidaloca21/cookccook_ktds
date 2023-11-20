@@ -1,0 +1,414 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.cookccook.app.recommend.dao.RecommDAO">
+
+      <resultMap type="com.cookccook.app.article.vo.ArticleVO" 
+            id="articleVOMap"
+            autoMapping="true">
+         <id column="ARTICLE_ID" property="articleId"/>
+         <association property="recipeVO" javaType="com.cookccook.app.article.vo.RecipeVO" autoMapping="true">
+              <id column="ARTICLE_ID" property="articleId" />
+              <result column="RECIPE_NAME" property="recipeName" />
+              <result column="ATT_IMG_SMALL" property="attImgSmall" />
+              <result column="TITLE_IMG_PATH" property="titleImgPath" />
+	         <association property="memberVO" javaType="com.cookccook.app.member.vo.MemberVO" autoMapping="true">
+	              <id column="MEMBER_ID" property="memberId" />
+	              <result column="MEM_NICKNAME" property="memNickname" />
+	              <result column="MEM_FILENAME" property="memfilename" />
+	         </association>
+         </association>
+         <collection property="artIngVOList" javaType="com.cookccook.app.recommend.vo.ArtIngVO" autoMapping="true">
+              <id column="ART_ING_ID" property="artIngId" />
+              <result column="INGREDIENT_ID" property="ingredientId" />
+              <association property="ingredientVO" javaType="com.cookccook.app.recommend.vo.IngredientVO" autoMapping="true">
+	              <id column="INGREDIENT_ID" property="ingredientId" />
+	              <result column="INGREDIENT_NAME" property="ingredientName" />
+	          </association>
+         </collection>
+         <collection property="artTagVOList" javaType="com.cookccook.app.recommend.vo.ArtTagVO" autoMapping="true">
+              <id column="ART_TAG_ID" property="artTagId" />
+              <association property="tagVO" javaType="com.cookccook.app.recommend.vo.TagVO" autoMapping="true">
+	              <id column="TAG_ID" property="tagId" />
+	              <result column="TAG_TITLE" property="tagTitle" />
+	          </association>
+         </collection>
+      </resultMap>   
+      
+      <resultMap type="com.cookccook.app.article.vo.ArticleVO"
+				 id="artIngVOMap"
+				 autoMapping="true">
+		 <id column="ARTICLE_ID" property="articleId"/>
+		 <association property="recipeVO" javaType="com.cookccook.app.article.vo.RecipeVO" autoMapping="true">
+              <id column="ARTICLE_ID" property="articleId" />
+              <result column="RECIPE_NAME" property="recipeName" />
+              <result column="ATT_IMG_SMALL" property="attImgSmall" />
+              <result column="TITLE_IMG_PATH" property="titleImgPath" />
+         </association>
+		 <collection property="artIngVOList"
+					 javaType="collection"
+					 ofType="com.cookccook.app.recommend.vo.ArtIngVO"
+					 autoMapping="true">
+				<id column="ART_ING_ID" property="artIngId"/>
+					<association property="ingredientVO"
+								 javaType="com.cookccook.app.recommend.vo.IngredientVO"
+								 autoMapping="true">
+					 <id column="INGREDIENT_ID" property="ingredientId"/>
+					</association>
+			 </collection>
+		 </resultMap>
+		 
+		 
+	     <resultMap type="com.cookccook.app.article.vo.RecipeVO"
+					id="recommendRecipeMap"
+					autoMapping="true">
+			 <id column="ARTICLE_ID" property="articleId"/>
+			 <collection property="artIngVOList"
+						 javaType="collection"
+						 ofType="com.cookccook.app.recommend.vo.ArtIngVO"
+						 autoMapping="true">
+					<id column="ART_ING_ID" property="artIngId"/>
+						<association property="ingredientVO"
+									 javaType="com.cookccook.app.recommend.vo.IngredientVO"
+									 autoMapping="true">
+						 <id column="INGREDIENT_ID" property="ingredientId"/>
+						 <collection property="productList"
+									 javaType="collection"
+									 ofType="com.cookccook.app.shop.vo.ProductVO"
+									 autoMapping="true">
+									 <id column="PRODUCT_ID" property="productId"/>
+						 </collection>
+					</association>
+			 </collection>
+		 </resultMap>
+		 
+	     <resultMap type="com.cookccook.app.recommend.vo.ArtIngVO"
+					id="zc"
+					autoMapping="true">
+			 <id column="ART_ING_ID" property="artIngId"/>
+			 <collection property="productList"
+						 javaType="collection"
+						 ofType="com.cookccook.app.shop.vo.ProductVO"
+						 autoMapping="true">
+						 <id column="PRODUCT_ID" property="productId"/>
+			</collection>
+		 </resultMap>
+
+	     <resultMap type="com.cookccook.app.shop.vo.ProductVO"
+					id="recommendProductMap"
+					autoMapping="true">
+			 <id column="PRODUCT_ID" property="productId"/>
+			<association property="ingredientVO"
+						 javaType="com.cookccook.app.recommend.vo.IngredientVO"
+						 autoMapping="true">
+			 <id column="INGREDIENT_ID" property="ingredientId"/>
+				 <collection property="artIngVOList"
+							 javaType="collection"
+							 ofType="com.cookccook.app.recommend.vo.ArtIngVO"
+							 autoMapping="true">
+						<id column="ART_ING_ID" property="artIngId"/>
+				 </collection>
+			 </association>
+		 </resultMap>
+
+	     <resultMap type="com.cookccook.app.shop.vo.ProductVO"
+					id="a"
+					autoMapping="true">
+			 <id column="PRODUCT_ID" property="productId"/>
+				<association property="ingredientVO"
+							 javaType="com.cookccook.app.recommend.vo.IngredientVO"
+							 autoMapping="true">
+				 <id column="INGREDIENT_ID" property="ingredientId"/>
+				 <collection property="artIngVOList"
+						     javaType="collection"
+						     ofType="com.cookccook.app.recommend.vo.ArtIngVO"
+						     autoMapping="true">
+					<id column="ART_ING_ID" property="artIngId"/>
+			 	 </collection>
+			 	 </association>
+		 </resultMap>
+		 
+      <resultMap type="com.cookccook.app.article.vo.ArticleVO"
+				 id="artTagVOMap"
+				 autoMapping="true">
+		 <id column="ARTICLE_ID" property="articleId"/>
+		 <association property="recipeVO" javaType="com.cookccook.app.article.vo.RecipeVO" autoMapping="true">
+              <id column="ARTICLE_ID" property="articleId" />
+              <result column="RECIPE_NAME" property="recipeName" />
+              <result column="ATT_IMG_SMALL" property="attImgSmall" />
+              <result column="TITLE_IMG_PATH" property="titleImgPath" />
+         </association>
+		 <collection property="artTagVOList"
+					 javaType="collection"
+					 ofType="com.cookccook.app.recommend.vo.ArtTagVO"
+					 autoMapping="true">
+				<id column="ART_TAG_ID" property="artTagId"/>
+					<association property="tagVO"
+								 javaType="com.cookccook.app.recommend.vo.TagVO"
+								 autoMapping="true">
+					 <id column="Tag_ID" property="tagId"/>
+					</association>
+			 </collection>
+		 </resultMap>
+	
+   <select id="searchRecommArticle"
+           parameterType="com.cookccook.app.article.vo.SearchArticleVO"
+           resultMap="artIngVOMap">
+       <include refid="common.pagination_header" />
+			SELECT A.ARTICLE_ID
+				 , A.ARTICLE_TYPE 
+				 , A.CUISINE_ID 
+				 , A.VIEW_CNT 
+			     , (SELECT COUNT(1) FROM INTEREST I WHERE I.ARTICLE_ID = A.ARTICLE_ID) LIKE_CNT
+			     , TO_CHAR(A.POST_DATE, 'YYYY-MM-DD HH24:MI:SS') POST_DATE
+			     , TO_CHAR(A.EDIT_DATE, 'YYYY-MM-DD HH24:MI:SS') EDIT_DATE
+			     , TO_CHAR(A.HIDDEN_DATE, 'YYYY-MM-DD HH24:MI:SS') HIDDEN_DATE
+				 , R.RECIPE_NAME 
+				 , R.ATT_IMG_SMALL 
+				 , R.TITLE_IMG_PATH
+				 , I.INGREDIENT_ID 
+				 , I.INGREDIENT_NAME 
+				 , T.TAG_ID 
+				 , T.TAG_TITLE
+				 , M.MEMBER_ID 
+				 , M.MEM_NICKNAME 
+				 , M.FILE_NAME 
+			FROM ARTICLE A
+			JOIN RECIPE R ON A.ARTICLE_ID = R.ARTICLE_ID 
+			JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID 
+			LEFT JOIN ART_TAG TT ON T.TAG_ID = TT.TAG_ID
+			LEFT JOIN ART_ING AI ON A.ARTICLE_ID = AI.ARTICLE_ID
+			LEFT JOIN TAG T ON T.TAG_ID = TT.TAG_ID
+			LEFT JOIN INGREDIENT I ON I.INGREDIENT_ID = AI.INGREDIENT_ID
+           WHERE 1=1
+         <if test='searchType != null and searchKeyword != ""'>
+       		 AND I.INGREDIENT_NAME LIKE '%' || #{searchKeyword} || '%'
+         	 OR T.TAG_TITLE LIKE '%' || #{searchKeyword} || '%'
+         	 OR R.RECIPE_NAME LIKE '%' || #{searchKeyword} || '%'
+         </if>
+         ORDER BY A.ARTICLE_ID  DESC
+         <include refid="common.pagination_footer" />
+   </select>
+   
+   <select id="getRecommCount"
+           parameterType="com.cookccook.app.article.vo.SearchArticleVO"
+           resultType="_int">
+       	  SELECT COUNT(A.ARTICLE_ID)
+			FROM ART_ING AI
+			JOIN INGREDIENT I ON I.INGREDIENT_ID = AI.INGREDIENT_ID
+			JOIN ARTICLE A ON A.ARTICLE_ID = AI.ARTICLE_ID
+			JOIN RECIPE R ON A.ARTICLE_ID = R.ARTICLE_ID 
+			JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID 
+           WHERE 1=1
+         <if test='searchType != null and searchKeyword != ""'>
+             <if test='searchType == "ingredient"'>
+       		 AND I.INGREDIENT_NAME LIKE '%' || #{searchKeyword} || '%'
+             </if>
+             <if test='searchType == "nlpSearch"'>
+         	 AND A.CONTENT LIKE '%' || #{searchKeyword} || '%'
+             </if>
+         </if>
+   </select>
+   
+   <select id="getArticleByIngName"
+           parameterType="string"
+           resultMap="artIngVOMap">
+			SELECT ARTICLE_ID
+				 , RECIPE_NAME 
+				 , ATT_IMG_SMALL 
+				 , TITLE_IMG_PATH
+				 , INGREDIENT_ID 
+				 , INGREDIENT_NAME 
+				 , MEMBER_ID 
+				 , MEM_NICKNAME 
+				 , FILE_NAME 	
+		 	  FROM (SELECT A.ARTICLE_ID
+						 , R.RECIPE_NAME 
+						 , R.ATT_IMG_SMALL
+						 , R.TITLE_IMG_PATH 
+						 , I.INGREDIENT_ID 
+						 , I.INGREDIENT_NAME 
+						 , M.MEMBER_ID 
+						 , M.MEM_NICKNAME 
+						 , M.FILE_NAME 	
+				 	 FROM ARTICLE A
+				 	 JOIN ART_ING AI ON A.ARTICLE_ID = AI.ARTICLE_ID
+				 	 JOIN INGREDIENT I ON I.INGREDIENT_ID = AI.INGREDIENT_ID
+				 	 JOIN RECIPE R ON A.ARTICLE_ID = R.ARTICLE_ID 
+				 	 JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID 
+		            WHERE 1=1
+		       	 	  AND I.INGREDIENT_NAME LIKE '%' || #{_parameter} || '%'
+		       	 	ORDER BY DBMS_RANDOM.value)
+   </select>
+
+   <select id="getArticleByTagName"
+           parameterType="string"
+           resultMap="artTagVOMap">
+			SELECT ARTICLE_ID
+				 , RECIPE_NAME 
+				 , ATT_IMG_SMALL 
+				 , TITLE_IMG_PATH
+				 , TAG_ID 
+				 , TAG_TITLE
+				 , MEMBER_ID 
+				 , MEM_NICKNAME 
+				 , FILE_NAME 	
+		 	  FROM (SELECT A.ARTICLE_ID
+						 , R.RECIPE_NAME 
+						 , R.ATT_IMG_SMALL
+						 , R.TITLE_IMG_PATH 
+						 , T.TAG_ID 
+						 , T.TAG_TITLE
+						 , M.MEMBER_ID 
+						 , M.MEM_NICKNAME 
+						 , M.FILE_NAME 	
+				 	 FROM ARTICLE A 
+				 	 JOIN ART_TAG TT ON A.ARTICLE_ID = TT.ARTICLE_ID
+				 	 JOIN TAG T ON T.TAG_ID = TT.TAG_ID
+				 	 JOIN RECIPE R ON A.ARTICLE_ID = R.ARTICLE_ID 
+				 	 JOIN "MEMBER" M ON A.MEMBER_ID = M.MEMBER_ID 
+		            WHERE 1=1
+		       	 	  AND T.TAG_TITLE LIKE '%' || #{searchKeyword} || '%'
+		   	 	 	ORDER BY DBMS_RANDOM.value)
+     		 WHERE ROWNUM <![CDATA[<=]]> 5
+   </select>
+   
+   <select id="getAllTagTitle"
+   			resultType="string">
+   		SELECT TAG_TITLE
+   		  FROM TAG
+   </select>
+   
+   <select id="recommendRecipeOnProduct"
+			parameterType="string"
+			resultMap="recommendRecipeMap">
+		SELECT PRODUCT_ID
+			 , PRD_NAME
+			 , ARTICLE_ID 
+			 , RECIPE_NAME 
+			 , ATT_IMG_SMALL 
+			 , TITLE_IMG_PATH
+			 , INGREDIENT_NAME 
+		FROM 
+		   (SELECT P.PRODUCT_ID
+				 , P.PRD_NAME
+				 , R.ARTICLE_ID 
+				 , R.RECIPE_NAME 
+				 , R.ATT_IMG_SMALL 
+				 , R.TITLE_IMG_PATH
+				 , I.INGREDIENT_NAME 
+			  FROM RECIPE R
+			  JOIN ART_ING AI 
+			    ON AI.ARTICLE_ID = R.ARTICLE_ID 
+			  JOIN PRODUCT P 
+			    ON P.INGREDIENT_ID = AI.INGREDIENT_ID 
+			  JOIN INGREDIENT I 
+			    ON I.INGREDIENT_ID = P.INGREDIENT_ID 
+			 WHERE P.PRODUCT_ID = #{_parameter}
+			 ORDER BY DBMS_RANDOM.value)
+     	WHERE ROWNUM <![CDATA[<=]]> 5
+	</select>
+	
+    <select id="recommendProductOnRecipe"
+			parameterType="string"
+			resultMap="recommendProductMap">
+		SELECT PRODUCT_ID
+			 , PRD_NAME
+			 , PRD_TITLE_IMG_ORIGIN
+			 , ARTICLE_ID 
+		  FROM 
+		  	   (SELECT P.PRODUCT_ID
+					 , P.PRD_NAME
+					 , P.PRD_TITLE_IMG_ORIGIN
+					 , AI.ARTICLE_ID 
+				  FROM ART_ING AI 
+				  JOIN PRODUCT P 
+				    ON P.INGREDIENT_ID = AI.INGREDIENT_ID
+				 WHERE 1=1
+				   AND ARTICLE_ID = #{_parameter}
+				 ORDER BY DBMS_RANDOM.value)
+				 WHERE ROWNUM <![CDATA[<=]]> 5
+	</select>
+   
+   <select id="getDailyRank"
+   		   resultType="com.cookccook.app.recommend.vo.DailyRankVO">
+   		SELECT "DATE", ARTICLE_ID, TOTAL_SCORE
+		  FROM (SELECT "DATE"
+			 	     , ARTICLE_ID
+			 	     , TOTAL_SCORE
+			 	     , ROW_NUMBER() OVER (PARTITION BY "DATE" 
+			 	     						   ORDER BY TOTAL_SCORE DESC) AS SCR
+			      FROM (SELECT TO_CHAR(ACT_DATE, 'YYYY-MM-DD') "DATE"
+			   	   		  , ARTICLE_ID
+			   	   		  , SUM(SCORE) TOTAL_SCORE 
+			   	   	   FROM SCORE 
+			   	   	  GROUP BY TO_CHAR(ACT_DATE, 'YYYY-MM-DD')
+			   	   	  	  , ARTICLE_ID 
+			   	   	  ORDER BY SUM(SCORE))) A
+		  WHERE SCR <![CDATA[<=]]> 3
+		    AND "DATE" = TO_CHAR(SYSDATE-20, 'YYYY-MM-DD')
+   </select>
+   
+   <insert id="addScore"
+   		   parameterType="com.cookccook.app.recommend.vo.ScoreVO">
+   		INSERT INTO SCORE
+   			 ( SCORE_ID
+			 , ARTICLE_ID
+			 , CODE
+			 , SCORE
+			 , ACT_DATE
+			 , MEMBER_ID )
+   		VALUES
+   			 ( ('SCR' || LPAD(SEQ_SCORE_PK.NEXTVAL, 6, '0'))
+			 , #{articleId}
+			 , #{code}
+			 , #{score}
+			 , SYSDATE
+			 , #{memberId})		   
+   </insert>
+   
+		<select id="getArticleIdByTagName"
+				parameterType="string"
+				resultType="string">
+			SELECT R.ARTICLE_ID
+			  FROM RECIPE R
+			  JOIN ART_TAG TT
+			  	ON R.ARTICLE_ID = TT.ARTICLE_ID
+			  JOIN TAG T
+			  	ON T.TAG_ID = TT.TAG_ID
+			 WHERE T.TAG_TITLE LIKE '%' || #{_parameter} || '%'
+		</select>
+		<select id="getArticleIdByIngName"
+				parameterType="string"
+				resultType="string">
+			SELECT R.ARTICLE_ID
+			  FROM RECIPE R
+			  JOIN ART_ING AI
+			  	ON R.ARTICLE_ID = AI.ARTICLE_ID
+			  JOIN INGREDIENT I
+			  	ON I.INGREDIENT_ID = AI.INGREDIENT_ID
+			 WHERE I.INGREDIENT_NAME LIKE '%' || #{_parameter} || '%'	   		   
+		</select>
+		<select id="getArticleIdByAnniversaryName"
+				parameterType="string"
+				resultType="string">
+			SELECT R.ARTICLE_ID
+			  FROM RECIPE R
+			  JOIN ART_ANN AA
+			  	ON R.ARTICLE_ID = AA.ARTICLE_ID
+			  JOIN ANNIVERSARY A
+			  	ON A.ANNIVERSARY_ID = AA.ANNIVERSARY_ID
+			 WHERE A.ANNIVERSARY_NAME LIKE '%' || #{_parameter} || '%'	   		   
+		</select>
+		<select id="getArticleIdByCuisineName"
+				parameterType="string"
+				resultType="string">
+			SELECT A.ARTICLE_ID
+			  FROM ARTICLE A
+			  JOIN CUISINE C
+			  	ON A.CUISINE_ID = C.CUISINE_ID
+			 WHERE C.CUISINE_NAME LIKE '%' || #{_parameter} || '%'	   		   
+		</select>
+   
+</mapper>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cookccook.app.shop.dao.ProductDAO">
+
+	<resultMap type="com.cookccook.app.shop.vo.ProductVO"
+			   id="productVOMap"
+			   autoMapping="true">
+		<id column="PRODUCT_ID" property="productId" />
+		<association property="memberVO"
+					 javaType="com.cookccook.app.member.vo.MemberVO"
+					 autoMapping="true">
+			<id column="MEMBER_ID" property="memberId" />
+			<result column="MEM_NICKNAME" property="memNickname" />
+			<result column="FILE_NAME" property="fileName" />
+		</association>
+	</resultMap>
+
+<!-- 	<select id="getProductAllCount"
+			resultType="_int">
+			SELECT COUNT(1)
+			FROM PRODUCT
+	</select> -->
+	
+	<select id="getAllProduct"
+			resultMap="productVOMap">
+		SELECT P.PRODUCT_ID
+			 , P.MEMBER_ID
+			 , P.INGREDIENT_ID
+			 , P.PRD_NAME
+			 , P.PRD_PRICE
+			 , P.PRD_ORIGIN
+			 , P.PRD_CONTENT
+			 , P.PRD_TITLE_IMG
+			 , P.PRD_CONTENT_IMG
+			 , P.PRD_TITLE_IMG_ORIGIN
+			 , P.PRD_CONTENT_IMG_ORIGIN
+			 , P.SALE_STATE
+			 , P.STOCK
+			 , TO_CHAR(P.PRD_REGIST_DATE) PRD_REGIST_DATE
+			 , TO_CHAR(P.PRD_HIDDEN_DATE) PRD_HIDDEN_DATE
+			 , M.MEM_NICKNAME
+			 , M.FILE_NAME
+		  FROM PRODUCT P
+ 		  JOIN MEMBER M
+		    ON M.MEMBER_ID = P.MEMBER_ID
+		 WHERE PRD_HIDDEN_DATE IS NULL
+		   AND P.SALE_STATE <![CDATA[<]]> 2
+	</select>
+	
+	<select id="getProductListByPrdName"
+			parameterType="string"
+			resultMap="productVOMap">
+		SELECT P.PRODUCT_ID
+			 , P.MEMBER_ID
+			 , P.INGREDIENT_ID
+			 , P.PRD_NAME
+			 , P.PRD_PRICE
+			 , P.PRD_ORIGIN
+			 , P.PRD_CONTENT
+			 , P.PRD_TITLE_IMG
+			 , P.PRD_CONTENT_IMG
+			 , P.PRD_TITLE_IMG_ORIGIN
+			 , P.PRD_CONTENT_IMG_ORIGIN
+			 , P.SALE_STATE
+			 , P.STOCK
+			 , TO_CHAR(P.PRD_REGIST_DATE) PRD_REGIST_DATE
+			 , TO_CHAR(P.PRD_HIDDEN_DATE) PRD_HIDDEN_DATE
+			 , M.MEM_NICKNAME
+			 , M.FILE_NAME
+		  FROM PRODUCT P
+ 		  JOIN MEMBER M
+		    ON M.MEMBER_ID = P.MEMBER_ID
+		 WHERE P.PRD_NAME LIKE '%'||#{_parameter}||'%'
+		   AND P.PRD_HIDDEN_DATE IS NULL
+		   AND P.SALE_STATE <![CDATA[<]]> 2
+	</select>
+	
+	<select id="getOneProduct"
+			parameterType="string"
+			resultMap="productVOMap">
+		SELECT P.PRODUCT_ID
+			 , P.MEMBER_ID
+			 , P.INGREDIENT_ID
+			 , P.PRD_NAME
+			 , P.PRD_PRICE
+			 , P.PRD_ORIGIN
+			 , P.PRD_CONTENT
+			 , P.PRD_TITLE_IMG
+			 , P.PRD_TITLE_IMG_ORIGIN
+			 , P.PRD_CONTENT_IMG
+			 , P.PRD_CONTENT_IMG_ORIGIN
+			 , P.SALE_STATE
+			 , P.STOCK
+			 , TO_CHAR(P.PRD_REGIST_DATE) PRD_REGIST_DATE
+			 , TO_CHAR(P.PRD_HIDDEN_DATE) PRD_HIDDEN_DATE
+			 , M.MEM_NICKNAME
+			 , M.FILE_NAME
+		  FROM PRODUCT P
+		  JOIN MEMBER M
+		    ON M.MEMBER_ID = P.MEMBER_ID
+		 WHERE P.PRODUCT_ID = #{_parameter}
+	</select>
+	
+	<select id="getProductChoice"
+			parameterType="string"
+			resultType="com.cookccook.app.shop.vo.ChoiceVO">
+		SELECT CHOICE_ID
+			 , PRODUCT_ID
+			 , CHO_NAME
+			 , CHO_PRICE
+		  FROM CHOICE
+		 WHERE PRODUCT_ID = #{_parameter}
+	</select>
+
+	<select id="getOneProductByChoiceId"
+			parameterType="string"
+			resultType="string">
+		SELECT PRODUCT_ID
+		  FROM CHOICE
+		 WHERE CHOICE_ID = #{_parameter}
+	</select>
+
+</mapper>

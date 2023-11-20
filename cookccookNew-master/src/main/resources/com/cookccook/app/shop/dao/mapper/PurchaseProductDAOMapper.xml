@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cookccook.app.shop.dao.PurchaseProductDAO">
+
+<resultMap type="com.cookccook.app.shop.vo.PurchaseVO"
+				id="PurchaseVOMap" autoMapping="true">
+		<id column="PURCHASE_ID" property="purchaseId" />
+		<association property="deliverPlaceVO"
+					 javaType="com.cookccook.app.shop.vo.DeliverPlaceVO" autoMapping="true">
+			<id column="DELIVER_PLACE_ID" property="deliverPlaceId" />
+			<association property="memberVO"
+					     javaType="com.cookccook.app.member.vo.MemberVO" autoMapping="true">
+				<id column="MEMBER_ID" property="memberId" />
+			</association>
+		</association>
+		<collection property="purchaseProductList"
+					ofType="com.cookccook.app.shop.vo.PurchaseProductVO"
+					autoMapping="true">
+			<id column="PURCHASE_PRODUCT_ID" property="purchaseProductId" />
+			<association property="choiceVO"
+						 javaType="com.cookccook.app.shop.vo.ChoiceVO" autoMapping="true">
+				<id column="CHOICE_ID" property="choiceId" />
+				<association property="productVO"
+							 javaType="com.cookccook.app.shop.vo.ProductVO" autoMapping="true">
+					<id column="PRODUCT_ID" property="productId" />
+				</association>
+			</association>
+		</collection>
+	</resultMap>
+	
+	<select id ="getPLAllCount"
+			resultType="_int">
+			SELECT COUNT(1) 
+		      FROM PURCHASE p 
+		      JOIN MEMBER M
+				ON P.MEMBER_ID = M.MEMBER_ID
+	</select>
+ 	
+ 	<select id="getPurchaseListByMemId"
+			parameterType="string"
+			resultMap="PurchaseVOMap">
+			SELECT P.PURCHASE_ID
+			, TO_CHAR(P.PURCHASE_DATE, 'YYYY-MM-DD') PURCHASE_DATE
+			, P.PAY_METHOD
+			, P.MEMBER_ID
+			, P.DELIVER_PLACE_ID
+			, P.DELIVER_MEMO
+			, PP.PURCHASE_PRODUCT_ID
+			, PP.QUANTITY
+			, PP.PUR_PRD_PRICE
+			, PP.DELIVER_FEE
+			, PP.PUR_STATE
+			, CASE PP.PUR_STATE 
+				WHEN 1 THEN '주문 접수 |'
+				WHEN 2 THEN '배송 준비 |'
+				WHEN 3 THEN '배송중 |'
+				WHEN 4 THEN '배송 완료 |'
+			  END STATE
+			, CASE PP.PUR_STATE
+				WHEN 1 THEN '배송 준비중'
+				WHEN 2 THEN '배송 준비중'
+				WHEN 3 THEN TO_CHAR(PP.DELIVER_DATE + 2, 'YYYY-MM-DD') || ' 배송예정'
+				WHEN 4 THEN TO_CHAR(PP.DELIVER_DATE, 'YYYY-MM-DD')
+			  END DELIVER_STATE
+			, PP.PUR_CANCEL_STATUS
+			, PP.WAYBILL
+			, TO_CHAR(PP.DELIVER_DATE, 'YYYY-MM-DD') DELIVER_DATE
+			, C.CHOICE_ID
+			, C.CHO_NAME
+			, C.CHO_PRICE
+			, PRD.PRODUCT_ID
+			, PRD.PRD_NAME
+			, PRD.PRD_PRICE
+			, PRD.SALE_STATE
+			, PRD.PRD_TITLE_IMG_ORIGIN
+			, DP.DELIVER_PLACE_ID
+			, DP.DEL_ALIAS
+			, DP.DEL_ADDRESS
+			, DP.DEL_DETAIL_ADDRESS
+			, DP.ZIP_CODE
+			, DP.RECIPIENT
+			, DP.RECIPIENT_PHONE_NUMBER
+			, M.MEMBER_ID
+			, M.MEM_EMAIL
+			, M.MEM_NICKNAME
+			, M.MEM_PHONE_NUMBER
+			, M.MEM_NAME
+			  FROM PURCHASE p 
+			  LEFT JOIN PURCHASE_PRODUCT pp 
+			    ON P.PURCHASE_ID = PP.PURCHASE_ID 
+			  LEFT JOIN CHOICE c 
+			    ON PP.CHOICE_ID = C.CHOICE_ID 
+			  LEFT JOIN PRODUCT PRD 
+			    ON PRD.PRODUCT_ID = C.PRODUCT_ID 
+			  LEFT JOIN DELIVER_PLACE dp 
+			    ON DP.MEMBER_ID = P.MEMBER_ID 
+			  LEFT JOIN MEMBER m 
+			    ON M.MEMBER_ID = DP.MEMBER_ID 
+			 WHERE P.MEMBER_ID = #{_parameter}
+			 ORDER BY P.PURCHASE_ID DESC
+  </select>
+  
+  <insert id="createCancelRequest"
+  		  parameterType="com.cookccook.app.shop.vo.CancelVO">
+  		  INSERT INTO CANCEL (
+		     CANCEL_ID
+		   , PURCHASE_ID
+		   , CAN_EXCUSE
+		   , CAN_DETAIL)
+		  VALUES(
+		     ('CAN' || LPAD(SEQ_CANCEL_PK.NEXTVAL, 6, '0'))
+		   , #{purchaseId}
+		   , #{canExcuse}
+		   , #{canDetail})
+  </insert>
+  <!-- SEQ_CANCEL_PK.NEXTVAL -->
+  
+   <select id="searchProducts"
+			parameterType="com.cookccook.app.shop.vo.KeywordVO"
+			resultMap="PurchaseVOMap">
+			SELECT P.PURCHASE_ID
+			, TO_CHAR(P.PURCHASE_DATE, 'YYYY-MM-DD') PURCHASE_DATE
+			, P.PAY_METHOD
+			, P.MEMBER_ID
+			, P.DELIVER_PLACE_ID
+			, P.DELIVER_MEMO
+			, PP.PURCHASE_PRODUCT_ID
+			, PP.QUANTITY
+			, PP.PUR_PRD_PRICE
+			, PP.DELIVER_FEE
+			, PP.PUR_STATE
+			, CASE PP.PUR_STATE 
+				WHEN 1 THEN '주문 접수 |'
+				WHEN 2 THEN '배송 준비 |'
+				WHEN 3 THEN '배송중 |'
+				WHEN 4 THEN '배송 완료 |'
+			  END STATE
+			, CASE PP.PUR_STATE
+				WHEN 1 THEN '배송 준비중'
+				WHEN 2 THEN '배송 준비중'
+				WHEN 3 THEN TO_CHAR(PP.DELIVER_DATE + 2, 'YYYY-MM-DD') || ' 배송예정'
+				WHEN 4 THEN TO_CHAR(PP.DELIVER_DATE, 'YYYY-MM-DD')
+			  END DELIVER_STATE
+			, PP.PUR_CANCEL_STATUS
+			, PP.WAYBILL
+			, TO_CHAR(PP.DELIVER_DATE, 'YYYY-MM-DD') DELIVER_DATE
+			, C.CHOICE_ID
+			, C.CHO_NAME
+			, C.CHO_PRICE
+			, PRD.PRODUCT_ID
+			, PRD.PRD_NAME
+			, PRD.PRD_PRICE
+			, PRD.PRD_TITLE_IMG_ORIGIN
+			, PRD.SALE_STATE
+			, DP.DELIVER_PLACE_ID
+			, DP.DEL_ALIAS
+			, DP.DEL_ADDRESS
+			, DP.DEL_DETAIL_ADDRESS
+			, DP.ZIP_CODE
+			, DP.RECIPIENT
+			, DP.RECIPIENT_PHONE_NUMBER
+			, M.MEMBER_ID
+			, M.MEM_EMAIL
+			, M.MEM_NICKNAME
+			, M.MEM_PHONE_NUMBER
+			, M.MEM_NAME
+			  FROM PURCHASE p 
+			  LEFT JOIN PURCHASE_PRODUCT pp 
+			    ON P.PURCHASE_ID = PP.PURCHASE_ID 
+			  LEFT JOIN CHOICE c 
+			    ON PP.CHOICE_ID = C.CHOICE_ID 
+			  LEFT JOIN PRODUCT PRD 
+			    ON PRD.PRODUCT_ID = C.PRODUCT_ID 
+			  LEFT JOIN DELIVER_PLACE dp 
+			    ON DP.MEMBER_ID = P.MEMBER_ID 
+			  LEFT JOIN MEMBER m 
+			    ON M.MEMBER_ID = DP.MEMBER_ID 
+			 WHERE M.MEMBER_ID = #{memberId}
+			   <if test='searchKeyword != null and searchKeyword != ""'>AND PRD.PRD_NAME LIKE '%' || #{searchKeyword} || '%'</if>
+			 ORDER BY P.PURCHASE_ID DESC
+  </select>
+  
+   	<select id="getPurchaseInfoByPurchaseId"
+			parameterType="string"
+			resultMap="PurchaseVOMap">
+			SELECT PP.PURCHASE_PRODUCT_ID 
+				 , PP.CHOICE_ID 
+				 , PP.QUANTITY 
+				 , PP.PUR_PRD_PRICE 
+				 , PP.DELIVER_FEE
+				 , CASE PP.PUR_STATE 
+					 WHEN 1 THEN '주문 접수 |'
+					 WHEN 2 THEN '배송 준비 |'
+					 WHEN 3 THEN '배송중 |'
+					 WHEN 4 THEN '배송 완료 |'
+				   END STATE
+				 , PP.PUR_CANCEL_STATUS 
+				 , P.PURCHASE_ID 
+				 , P.DELIVER_PLACE_ID 
+				 , P.DELIVER_PLACE_ID 
+				 , P.DELIVER_MEMO 
+				 , P.PURCHASE_DATE 
+				 , P.PAY_METHOD 
+				 , C.CHO_NAME 
+				 , C.CHO_PRICE 
+				 , PR.PRODUCT_ID 
+				 , PR.PRD_NAME 
+				 , PR.PRD_PRICE
+				 , PR.PRD_TITLE_IMG_ORIGIN
+				 , PM.IMP_UID
+			  FROM PURCHASE_PRODUCT PP
+			  LEFT JOIN PURCHASE P
+				ON P.PURCHASE_ID = PP.PURCHASE_ID 
+			  LEFT JOIN PAYMENTS PM
+			    ON P.PURCHASE_ID = PM.MERCHANT_UID
+			  LEFT JOIN CHOICE C 
+				ON C.CHOICE_ID = PP.CHOICE_ID 
+			  LEFT JOIN PRODUCT PR 
+				ON C.PRODUCT_ID = PR.PRODUCT_ID 
+			 WHERE PP.PURCHASE_ID = #{_parameter}
+  </select>
+  
+</mapper>

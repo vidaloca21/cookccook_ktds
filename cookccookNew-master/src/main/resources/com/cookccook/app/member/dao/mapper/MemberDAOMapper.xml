@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cookccook.app.member.dao.MemberDAO">
+
+	<resultMap type="com.cookccook.app.shop.vo.ProductVO"
+			   id="productVOMap"
+			   autoMapping="true">
+		<id column="PRODUCT_ID" property="productId" />
+		<association property="memberVO"
+					 javaType="com.cookccook.app.member.vo.MemberVO"
+					 autoMapping="true">
+			<id column="MEMBER_ID" property="memberId" />
+			<result column="MEM_NICKNAME" property="memNickname" />
+		</association>
+	</resultMap>
+	
+	<resultMap type="com.cookccook.app.subscribe.vo.SubPayVO"
+		id="SubPayVOMap" autoMapping="true">
+		<id column="SUB_PAY_ID" property="subPayId" />
+		<association property="subscribeVO"
+			javaType="com.cookccook.app.subscribe.vo.SubscribeVO"
+			autoMapping="true">
+			<id column="SUBSCRIBE_ID" property="subscribeId" />
+		</association>
+	</resultMap>
+
+    <select id="getMemberByEmail"
+            parameterType="string"
+            resultType="com.cookccook.app.member.vo.MemberVO">
+        SELECT MEMBER_ID
+        	 , MEM_EMAIL
+             , MEM_PASSWORD
+             , MEM_NICKNAME
+             , MEM_PHONE_NUMBER
+             , MEM_NAME
+             , MEM_ADDRESS
+             , MEM_BIRTHYEAR
+             , MEM_BIRTHDAY
+             , MEM_SEX
+             , MEM_JOIN_DATE
+             , MEM_UNREGIST_DATE
+             , PROVIDER
+             , ROLE
+             , SALT
+             , BLOCK_YN
+             , FILE_NAME
+             , ORIGIN_FILE_NAME
+             , IPADDRESS
+          FROM MEMBER
+         WHERE MEM_EMAIL = #{_parameter}
+    </select>
+
+    <select	id = "getEmailCount"
+               parameterType = "string">
+        SELECT COUNT(1)
+        FROM MEMBER
+        WHERE MEM_EMAIL = #{_parameter}
+    </select>
+        <!-- 회원 정보를 저장하는 쿼리 -->
+        <insert id="createNewMember" parameterType="com.cookccook.app.member.vo.MemberVO">
+            INSERT INTO MEMBER
+            ( MEM_EMAIL
+            , MEM_NAME
+            , MEM_PASSWORD
+            , SALT
+            , MEM_SEX
+            , MEM_BIRTHDAY
+            , MEM_ADDRESS
+            , PROVIDER
+            , BLOCK_YN
+            , ROLE
+             )
+            VALUES 
+            ( #{email}
+            , #{name}
+            , #{password}
+            , NVL(#{salt}, 'NONSALT')
+            , #{memSex}
+            , #{memBirthday}
+            , #{memAddress}
+            , NVL(#{provider}, 'cookccook')
+            , NVL(#{blockYn}, 'N')
+            , NVL(#{role}, 'USER')
+            )
+        </insert>
+
+        <update id="createOrUpdate"
+            parameterType="com.cookccook.app.member.vo.MemberVO">
+        MERGE INTO MEMBER M
+        USING (SELECT 1 FROM DUAL) D
+        ON (M.MEM_EMAIL = #{memEmail})
+        WHEN MATCHED THEN
+        UPDATE SET M.PROVIDER = #{provider}
+        WHEN NOT MATCHED THEN
+        INSERT (  
+         M.MEMBER_ID     
+        ,M.MEM_EMAIL
+		,M.MEM_PASSWORD
+		,M.MEM_NICKNAME
+		,M.MEM_PHONE_NUMBER
+		,M.MEM_NAME
+		,M.MEM_ADDRESS
+		,M.MEM_BIRTHYEAR
+		,M.MEM_BIRTHDAY
+		,M.MEM_SEX
+		,M.MEM_JOIN_DATE
+		,M.MEM_UNREGIST_DATE
+		,M.PROVIDER
+		,M.ROLE
+		,M.SALT
+		,M.BLOCK_YN
+		)
+        VALUES (
+          ('MEM' || LPAD(SEQ_MEMBER_PK.NEXTVAL, 6, '0'))
+		, #{memEmail}
+		<if test='provider != "cookccook"'>
+		, NVL(#{memPassword}, 'OAUTH')
+		</if>
+		<if test='provider == "cookccook"'>
+		, #{memPassword}
+		</if>
+		, #{memNickname}
+		, #{memPhoneNumber}
+		, #{memName}
+		, #{memAddress}
+		, #{memBirthyear}
+		, #{memBirthday}
+		, #{memSex}
+		, SYSDATE
+		, NULL
+		, NVL(#{provider}, 'cookccook')
+		, NVL(#{role}, 'USER')
+		, #{salt}
+		, NVL(#{blockYn}, 'N')
+		)
+    </update>
+    
+    <update id="memberUpdateRoleandStatus"
+            parameterType="com.cookccook.app.member.vo.MemberVO">
+       <!--  <choose>
+       <when test="blockYn == 'R'">
+            UPDATE MEMBER M
+            SET M.ROLE = #{role},
+                M.BLOCK_YN = #{blockYn},
+                M.MEM_UNREGIST_DATE = SYSDATE
+            WHERE M.MEM_EMAIL = #{memEmail}
+        </when>
+        <otherwise>
+            UPDATE MEMBER M
+            SET M.ROLE = #{role},
+                M.BLOCK_YN = #{blockYn}
+            WHERE M.MEM_EMAIL = #{memEmail}
+        </otherwise>
+    </choose> -->
+        UPDATE MEMBER M
+		SET M.ROLE = #{role},
+			M.BLOCK_YN = #{blockYn},
+			M.LOGIN_CNT = CASE WHEN #{blockYn} = 'N' THEN NULL ELSE M.LOGIN_CNT END
+		WHERE M.MEM_EMAIL = #{memEmail}
+    </update>
+    
+    <select id="getAllMember" resultType="com.cookccook.app.member.vo.MemberVO">
+    SELECT MEMBER_ID
+    		, MEM_EMAIL
+    		, ROLE
+    		, MEM_NICKNAME
+    		, MEM_PHONE_NUMBER
+    		, BLOCK_YN
+    		, MEM_JOIN_DATE
+    		, MEM_BIRTHDAY
+    		, PROVIDER
+    		, MEM_SEX
+    		, MEM_ADDRESS
+    		, MEM_UNREGIST_DATE
+    FROM MEMBER
+    ORDER BY MEMBER_ID DESC 
+    </select>
+    
+    <select id="getMemberAllCount"
+	        parameterType="string">
+		SELECT COUNT(1)
+        FROM MEMBER
+        WHERE MEM_EMAIL = #{_parameter}
+	</select>
+	
+	 <select id="getOneMember"
+			parameterType="string"
+			resultType="com.cookccook.app.member.vo.MemberVO">
+		SELECT MEMBER_ID
+			 , MEM_EMAIL
+             , MEM_PASSWORD
+             , MEM_NICKNAME
+             , MEM_PHONE_NUMBER
+             , MEM_NAME
+             , MEM_ADDRESS
+             , MEM_BIRTHYEAR
+             , MEM_BIRTHDAY
+             , MEM_SEX
+             , MEM_JOIN_DATE
+             , LATEST_LOGIN_SUCCESS_DATE
+             , MEM_UNREGIST_DATE
+             , PROVIDER
+             , ROLE
+             , SALT
+             , BLOCK_YN
+             , LOGIN_CNT
+             , FILE_NAME
+             , ORIGIN_FILE_NAME
+             , IPADDRESS
+             , MEM_ADDRESS_NO
+             , MEM_ADDRESS_DETAIL
+		  FROM MEMBER
+		 WHERE MEM_EMAIL = #{_parameter}
+	</select>
+	
+	<update id="memberUpdateInfo"
+            parameterType="com.cookccook.app.member.vo.MemberVO">
+        
+        UPDATE MEMBER M
+		SET M.MEM_NICKNAME = #{memNickname}
+			, M.MEM_NAME = #{memName}
+			, M.MEM_BIRTHDAY = #{memBirthday}
+			, M.MEM_PHONE_NUMBER = #{memPhoneNumber}
+			, M.MEM_SEX = #{memSex}
+			, M.MEM_ADDRESS_NO = #{memAddressNo}
+			, M.MEM_ADDRESS = #{memAddress}
+			, M.MEM_ADDRESS_DETAIL = #{memAddressDetail}
+			<if test='memPassword != null and memPassword != ""'>
+			, M.MEM_PASSWORD = #{memPassword}
+			, M.SALT = #{salt}
+			</if>
+			<if test='fileName != null and fileName != ""'>
+			 , M.FILE_NAME = #{fileName}
+ 			 , M.ORIGIN_FILE_NAME = #{originFileName}
+			</if> 
+		WHERE M.MEM_EMAIL = #{memEmail}
+    </update>
+    
+    <update id="deleteMember" parameterType="string">
+    	UPDATE MEMBER M
+    	SET M.BLOCK_YN = 'R'
+    		, M.MEM_UNREGIST_DATE = SYSDATE
+    	WHERE M.MEM_EMAIL = #{email}	
+    </update>
+    
+    <update id="updateLatestLoginSuccessDate" parameterType="string">
+    	UPDATE MEMBER M
+    	SET M.LATEST_LOGIN_SUCCESS_DATE = SYSDATE
+    	WHERE M.MEM_EMAIL = #{email}
+    </update>
+    
+    <update id="updateIpAddress" parameterType="com.cookccook.app.member.vo.MemberVO">
+    UPDATE MEMBER M
+    SET M.IPADDRESS = #{ipAddress}
+    WHERE M.MEM_EMAIL = #{memEmail}
+    
+    </update>
+    
+    <select id="getOneAdminMember"
+			parameterType="string"
+			resultType="com.cookccook.app.member.vo.MemberVO">
+		SELECT MEMBER_ID
+			 , MEM_EMAIL
+             , MEM_PASSWORD
+             , MEM_NICKNAME
+             , MEM_PHONE_NUMBER
+             , MEM_NAME
+             , MEM_ADDRESS
+             , MEM_BIRTHYEAR
+             , MEM_BIRTHDAY
+             , MEM_SEX
+             , MEM_JOIN_DATE
+             , LATEST_LOGIN_SUCCESS_DATE
+             , MEM_UNREGIST_DATE
+             , PROVIDER
+             , ROLE
+             , SALT
+             , BLOCK_YN
+             , LOGIN_CNT
+             , FILE_NAME
+             , ORIGIN_FILE_NAME
+             , IPADDRESS
+		  FROM MEMBER
+		 WHERE MEM_EMAIL = #{_parameter}
+	</select>
+	
+	 <select id="selectMemberArticles" 
+			 parameterType="string" 
+			 resultType="com.cookccook.app.article.vo.ArticleVO">
+         SELECT A.ARTICLE_ID
+           , A.ARTICLE_TYPE
+           , A.MEMBER_ID
+           , A.CUISINE_ID
+           , A.UPPER_ARTICLE_ID
+           , A.TITLE
+           , A.CONTENT
+           , A.ARTICLE_INDEX
+           , A.ARTICLE_CONTENT
+           , A.VIEW_CNT
+           , A.LIKE_CNT
+           , A.EVENT_STATUS
+           , A.SAVE_STATUS
+           , A.POST_DATE
+           , A.EDIT_DATE
+           , A.HIDDEN_DATE
+        FROM ARTICLE A
+    	WHERE A.MEMBER_ID = #{_parameter}
+    </select>
+    
+    <select id="getInflReadyMember" 
+    		resultType="com.cookccook.app.member.vo.MemberVO">
+	       SELECT M.MEMBER_ID
+	    		, M.MEM_EMAIL
+	    		, M.ROLE
+	    		, M.MEM_NICKNAME
+	    		, M.MEM_PHONE_NUMBER
+	    		, M.BLOCK_YN
+	    		, M.MEM_JOIN_DATE
+	    		, M.MEM_BIRTHDAY
+	    		, M.PROVIDER
+	    		, M.MEM_SEX
+	    		, M.MEM_ADDRESS
+	    		, M.MEM_UNREGIST_DATE
+				, COUNT(I.INTEREST_ID) TOTAL_LIKE
+	    	 FROM MEMBER M
+	    	 JOIN ARTICLE A
+	    	   ON M.MEMBER_ID = A.MEMBER_ID
+	    	 JOIN INTEREST I
+	    	   ON A.ARTICLE_ID = I.ARTICLE_ID
+	    	GROUP BY M.MEMBER_ID
+	    		, M.MEM_EMAIL
+	    		, M.ROLE
+	    		, M.MEM_NICKNAME
+	    		, M.MEM_PHONE_NUMBER
+	    		, M.BLOCK_YN
+	    		, M.MEM_JOIN_DATE
+	    		, M.MEM_BIRTHDAY
+	    		, M.PROVIDER
+	    		, M.MEM_SEX
+	    		, M.MEM_ADDRESS
+	    		, M.MEM_UNREGIST_DATE
+		   HAVING M."ROLE" = 'USER'
+   		 	  AND COUNT(I.INTEREST_ID) <![CDATA[>=]]> 3
+    </select>
+    
+    <select id="getAllInfluencer"
+    		resultType="com.cookccook.app.member.vo.MemberVO">
+   		   SELECT M.MEMBER_ID
+	    		, M.MEM_EMAIL
+	    		, M.ROLE
+	    		, M.MEM_NICKNAME
+	    		, M.MEM_PHONE_NUMBER
+	    		, M.BLOCK_YN
+	    		, M.MEM_JOIN_DATE
+	    		, M.MEM_BIRTHDAY
+	    		, M.PROVIDER
+	    		, M.MEM_SEX
+	    		, M.MEM_ADDRESS
+	    		, M.MEM_UNREGIST_DATE
+	    		, COUNT(A.ARTICLE_ID) TOTAL_ARTICLE 
+	    	 FROM MEMBER M
+	    	 JOIN ARTICLE A
+	    	   ON M.MEMBER_ID = A.MEMBER_ID
+		    WHERE M."ROLE" = 'INFLUENCER'
+		    GROUP BY M.MEMBER_ID
+	    		, M.MEM_EMAIL
+	    		, M.ROLE
+	    		, M.MEM_NICKNAME
+	    		, M.MEM_PHONE_NUMBER
+	    		, M.BLOCK_YN
+	    		, M.MEM_JOIN_DATE
+	    		, M.MEM_BIRTHDAY
+	    		, M.PROVIDER
+	    		, M.MEM_SEX
+	    		, M.MEM_ADDRESS
+	    		, M.MEM_UNREGIST_DATE
+    </select>
+    
+    <update id="updateInfluencer"
+    		parameterType="com.cookccook.app.article.vo.ArticleVO">
+    	UPDATE MEMBER
+		<choose>
+			<when test='role == "INFLUENCER"'> SET ROLE = #{role}</when>
+			<when test='role == "USER"'>SET ROLE = #{role}</when>
+			<otherwise>SET ROLE = 'USER'</otherwise>
+		</choose>
+    	 WHERE MEMBER_ID = #{memberId}
+    </update>
+    
+    <update id="memberLoginCount"
+            parameterType="com.cookccook.app.member.vo.MemberVO">
+	    UPDATE MEMBER M
+		SET M.LOGIN_CNT = #{loginCnt},
+			M.LATEST_LOGIN_FAIL_DATE = #{latestLoginFailDate},  
+			M.BLOCK_YN = #{blockYn}
+		WHERE M.MEM_EMAIL = #{memEmail}
+	</update>
+	
+	<select id="getAllSellerMembers" resultType="com.cookccook.app.member.vo.MemberVO">
+    	SELECT MEMBER_ID
+			 , MEM_EMAIL
+			 , MEM_NAME
+			 , MEM_NICKNAME
+			 , SELLER_RATING
+			 , MEM_PHONE_NUMBER
+			 , MEM_ADDRESS
+			 , BUSINESS_NUMBER
+			 , BLOCK_YN
+			 , IPADDRESS
+			 , LATEST_LOGIN_SUCCESS_DATE
+			 , MEM_JOIN_DATE
+			 , MEM_UNREGIST_DATE
+    	  FROM MEMBER 
+    	 WHERE ROLE = 'SELLER'
+	</select>
+	
+	<select id="getAllProductList" 
+			resultMap="productVOMap">
+		SELECT P.PRODUCT_ID
+			 , M.MEM_NICKNAME
+			 , P.INGREDIENT_ID
+			 , P.PRD_NAME
+			 , P.PRD_PRICE
+			 , P.PRD_ORIGIN
+			 , P.PRD_CONTENT
+			 , P.SALE_STATE
+			 , P.STOCK
+			 , P.PRD_REGIST_DATE
+			 , P.PRD_HIDDEN_DATE
+		  FROM PRODUCT P
+		  JOIN MEMBER M
+		  	ON M.MEMBER_ID = P.MEMBER_ID
+	</select>
+	
+	<select id="getAllProductListSort"
+			parameterType="_int"
+			resultMap="productVOMap">
+		SELECT P.PRODUCT_ID
+			 , M.MEM_NICKNAME
+			 , P.INGREDIENT_ID
+			 , P.PRD_NAME
+			 , P.PRD_PRICE
+			 , P.PRD_ORIGIN
+			 , P.PRD_CONTENT
+			 , P.SALE_STATE
+			 , P.STOCK
+			 , P.PRD_REGIST_DATE
+			 , P.PRD_HIDDEN_DATE
+		  FROM PRODUCT P
+		  JOIN MEMBER M
+		  	ON M.MEMBER_ID = P.MEMBER_ID
+	  	 ORDER BY ${_parameter}
+	</select>
+	
+	<!-- <update id="memberFailLoginDate"
+            parameterType="com.cookccook.app.member.vo.MemberVO">
+	    UPDATE MEMBER M
+		SET M.LOGIN_CNT = #{loginCnt}, 
+		WHERE M.MEM_EMAIL = #{memEmail}
+	</update> -->
+	<select id="subMemberList"
+			resultMap="SubPayVOMap">
+		SELECT SP.MEMBER_ID
+			 , SP.SUB_PAY_ID
+			 , SP.IMP_UID
+			 , S.SUBSCRIBE_ID
+			 , SP.PAY_METHOD
+			 , SP.PAY_DATE
+			 , SP.CANCEL_DATE
+			 , CASE
+				 WHEN S.SUB_CHOICE LIKE '%' || '채소' || '%' THEN '그린 식단'
+				 WHEN S.SUB_CHOICE LIKE '%' || '육류' || '%' THEN '밸런스 식단'
+				END SUBS_CATEGORY
+			 , CASE
+				 WHEN S.SUB_CHOICE LIKE '%' || '2주' || '%' THEN '2주 마다'
+				 WHEN S.SUB_CHOICE LIKE '%' || '4주' || '%' THEN '4주 마다'
+				END SUBS_CYCLE
+			 , S.SUB_PRICE
+		  FROM SUB_PAY sp
+		 RIGHT JOIN SUBSCRIBE s
+			ON S.SUBSCRIBE_ID = SP.SUBSCRIBE_ID
+		 WHERE MEMBER_ID IS NOT NULL
+	</select>
+	
+	<insert id="createNewSeller"
+			parameterType="com.cookccook.app.member.vo.MemberVO">
+		 MERGE INTO MEMBER M
+         USING (SELECT 1 FROM DUAL) D
+        	ON (M.MEM_EMAIL = #{memEmail})
+       	  WHEN MATCHED THEN
+        	   UPDATE SET M.PROVIDER = #{provider}
+          WHEN NOT MATCHED THEN
+		       INSERT 
+			        ( M.MEMBER_ID     
+			        , M.MEM_EMAIL
+				    , M.MEM_PASSWORD
+				    , M.MEM_NICKNAME
+				    , M.MEM_PHONE_NUMBER
+				    , M.BUSINESS_NUMBER
+				    , M.MEM_NAME
+				    , M.MEM_ADDRESS
+				    , M.MEM_JOIN_DATE
+				    , M.MEM_UNREGIST_DATE
+				    , M.PROVIDER
+				    , M.ROLE
+				    , M.SALT
+				    , M.BLOCK_YN)
+        	   VALUES ( ('MEM' || LPAD(SEQ_MEMBER_PK.NEXTVAL, 6, '0'))
+					, #{memEmail}
+					, #{memPassword}
+					, #{memNickname}
+					, #{memPhoneNumber}
+					, #{businessNumber}
+					, #{memName}
+					, #{memAddress}
+					, SYSDATE
+					, NULL
+					, NVL(#{provider}, 'cookccook')
+					, NVL(#{role}, 'PRESELLER')
+					, #{salt}
+					, NVL(#{blockYn}, 'N'))
+	</insert>
+	
+	<update id="sellerUpdateInfo"
+            parameterType="com.cookccook.app.member.vo.MemberVO">
+        UPDATE MEMBER M
+		SET M.MEM_NICKNAME = #{memNickname}
+			, M.MEM_NAME = #{memName}
+			, M.MEM_PHONE_NUMBER = #{memPhoneNumber}
+			, M.BUSINESS_NUMBER = #{businessNumber}
+			, M.MEM_ADDRESS_NO = #{memAddressNo}
+			, M.MEM_ADDRESS = #{memAddress}
+			, M.MEM_ADDRESS_DETAIL = #{memAddressDetail}
+			<if test='fileName != null and fileName != ""'>
+			 , M.FILE_NAME = #{fileName}
+ 			 , M.ORIGIN_FILE_NAME = #{originFileName}
+			</if> 
+		WHERE M.MEM_EMAIL = #{memEmail}
+    </update>
+    
+    <select id="getAllPreSellers"
+    		resultType="com.cookccook.app.member.vo.MemberVO">
+    	SELECT MEMBER_ID
+			 , MEM_EMAIL
+			 , MEM_NAME
+			 , MEM_NICKNAME
+			 , SELLER_RATING
+			 , MEM_PHONE_NUMBER
+			 , MEM_ADDRESS
+			 , BUSINESS_NUMBER
+			 , BLOCK_YN
+			 , IPADDRESS
+			 , LATEST_LOGIN_SUCCESS_DATE
+			 , MEM_JOIN_DATE
+			 , MEM_UNREGIST_DATE
+    	  FROM MEMBER 
+    	 WHERE ROLE = 'PRESELLER'
+	</select>
+	
+	<update id="updatePresellerToSeller"
+			parameterType="com.cookccook.app.member.vo.MemberVO">
+		UPDATE MEMBER
+		   SET ROLE = 'SELLER'
+    	 WHERE MEMBER_ID = #{memberId}
+	</update>
+	
+	<delete id="deleteMemberByMemberId"
+			parameterType="com.cookccook.app.member.vo.MemberVO">
+		DELETE
+		  FROM MEMBER
+		 WHERE MEMBER_ID = #{memberId}
+	</delete>
+			
+</mapper>

@@ -1,0 +1,283 @@
+
+@font-face {
+    font-family: 'SUIT-Regular';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+/* 디폴트 컴포넌트 */
+
+.btn_fill {
+  display: flex;
+  position: relative;
+  width: 150px;
+  height: 50px;
+  font-size: 18px; 
+  font-weight: bold;
+  background-color: #FB8F67;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.btn_empty {
+  display: flex;
+  position: relative;
+  width: 150px;
+  height: 50px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #fff;
+  border: 1px solid #FB8F67;
+  color: #FB8F67;
+  border-radius: 10px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+   padding: 5px;
+}
+
+.btn_navigate {
+	padding: 5px;
+}
+
+.btn_fill_s{
+	padding: 0 21px;
+	color: #fff;
+	font-size: 14px;
+	font-family: "맑은 고딕", Malgun Gothic, sans-serif;
+	line-height: 30px;
+	border: 1px solid transparent;
+	background-color: #FB8F67;
+}
+
+.btn_empty_s{
+	padding: 0 21px;
+	color: #FB8F67;
+	font-size: 14px;
+	font-family: "맑은 고딕", Malgun Gothic, sans-serif;
+	line-height: 30px;
+	border: 1px solid #FB8F67;
+	background-color: #fff;
+}
+
+.btnNormal {
+	padding: 0 6px;
+	color: #1c1c1c;
+	font-size: 12px;
+	font-weight: normal;
+	line-height: 20px;
+	line-height: 22px\0;
+	border: 1px solid #cacaca;
+	background-color: #f8f8f8;
+}
+
+* {
+  color: #2B1512;
+  text-decoration: none;
+	font-family: 'SUIT-Regular';
+	vertical-align: middle;
+}
+
+a {
+	text-decoration: none;
+}
+
+.font_title {
+  font-size: 28px;
+  font-weight: bold;
+  padding:5px;
+  
+}
+.font_subtitle {
+  font-size: 20px;
+  padding:5px;
+
+}
+
+.font_content {
+  font-size: 16px;
+
+}
+
+.font_mini {
+  font-size: 15px;
+  color: #555;
+
+}
+
+.font_emphasis {
+  font-size: 18px;
+  font-weight: bold;
+  color: #FF6347;
+
+}
+/* HEADER */
+.header {
+  display: grid;
+  grid-template-columns: 25% 50% 25%;
+  height: 130px;
+  top: 0;
+  position: sticky;
+  background-color: #fff;
+  z-index: 9;
+  min-width: 1484px;
+  align-content: space-between;
+  margin: 0;
+  
+}
+
+
+.icon_bar {
+  grid-column: 1/2;
+  text-align: center;
+  padding: 10px;
+  }
+  
+  #icon {
+  height: 100px;
+  }
+  
+  .icon_bar img {
+    display: block;
+    margin: 0 auto;
+ }
+.navi_bar {
+  text-align: center;
+  grid-column: 2/3;
+  align-self: end;
+  height: 35px;
+}
+
+.menu {
+  display: inline-block;
+  height: 33px;
+  width: 150px;
+  font-size: 25px;
+  font-weight: bold;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.menu_highlight {
+  display: inline-block;
+  height: 33px;
+  width: 150px;
+  font-size: 25px;
+  font-weight: bold;
+  color: #FF6347;
+  border-bottom: solid 5px #FF6347;
+  padding-bottom: 10px;
+  align-self: center;
+    
+
+}
+.mem_bar {
+	position: fixed;
+	top: 10px;
+	right: 30px;
+	display: inline-block;
+}
+
+.mem .none_mem {
+	position: fixed;
+	top: 10px;
+	right: 30px;
+	display: inline-block;
+}
+
+#login, #signup, #logout, #myinfo, #managementPg {
+	display: inline-block;
+}
+
+/* MAIN */
+
+.main {
+  display: grid;
+  grid-template-columns: 20% 60% 20%;
+  min-height: 100%;
+  min-width: 1484px;
+  padding: 20px;
+  background-color: #fbf7f1;
+
+}
+
+/* .container 는 각자가 작업한 내용 */
+
+.container {
+  min-height: 100%;
+  min-width: 1055px;
+  padding: 0px 20px;
+    
+}
+
+
+/* FOOTER */
+
+ .footer {
+  display: grid;
+  grid-template: 1/4;
+  border-top: 1px solid #FFF1E0;
+  font-size: 12px;
+  bottom: 0;
+  width: 100%;
+  min-width: 1484px;
+  justify-content:center;
+}
+
+.footer > ul {
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+}
+
+.footer > ul > li {
+	display: flex;
+	flex-direction: column;
+  font-size: 14px;
+  text-decoration-style: none;
+	
+}
+
+/*raido button css*/
+[type="radio"] {
+	background-color: #fff;
+	appearance: none;
+	border: max(2px, 0.1em) solid gray;
+	border-radius: 50%;
+	width: 1.25em;
+	height: 1.25em;
+	transition: border 0.5s ease-in-out;
+}
+
+[type="radio"]:checked {
+	border: 0.4em solid #FF6347;
+}
+
+[type="radio"]:hover {
+	box-shadow: 0 0 0 max(4px, 0.2em) lightgray;
+	cursor: pointer;
+}
+
+[type="radio"]:hover + span {
+	cursor: pointer;
+}
+
+/*input text css*/
+[type="text"] {
+	max-width: 100%;
+	height: 22px;
+	padding: 0 5px;
+	line-height: 22px;
+	box-sizing: border-box;
+	border: 1px solid #a7a7a7;
+	border-right-color: #cfcfcf;
+	border-bottom-color: #cfcfcf;
+	outline: 0 none;
+}
+
+
