@@ -8,7 +8,6 @@
 ![0008](https://github.com/vidaloca21/cookccookNew/assets/42363520/fe9bce18-82bd-477c-8448-60d43fc97e26)
 ![0009](https://github.com/vidaloca21/cookccookNew/assets/42363520/8c7f80ff-e704-4c99-9d72-05700ffb90c3)
 ![0010](https://github.com/vidaloca21/cookccookNew/assets/42363520/26f41cc3-7a8f-4b0f-bd46-552d00074c61)
-![0012](https://github.com/vidaloca21/cookccookNew/assets/42363520/8a306e74-1a8d-4a4b-8e04-c440c80a2953)
 ![0013](https://github.com/vidaloca21/cookccookNew/assets/42363520/771ced25-e0a3-4cb4-89b5-e3a630a501f9)
 ![0014](https://github.com/vidaloca21/cookccookNew/assets/42363520/e21d00d8-a6a0-4507-9610-cd57a15a82f0)
 ![0015](https://github.com/vidaloca21/cookccookNew/assets/42363520/484218d5-b26f-44d2-b8d3-29024549b39b)
